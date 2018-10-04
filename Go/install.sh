@@ -165,7 +165,7 @@ case "$DISTRO" in
   configureAndInstall
   ;;
 
-"SLES-15")
+"sles-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   sudo zypper install -y tar wget gcc
   configureAndInstall
