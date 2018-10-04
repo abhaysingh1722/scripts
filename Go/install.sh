@@ -4,35 +4,104 @@
 
 set -e
 
+trap "" 2 ERR
+
+source "/etc/os-release"
+
 PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
-
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+
+OVERRIDE=false
 
 function error_handle() {
   stty echo;
 }
 
-function getDetails()
+function checkPrequisites()
+{
+  _=$(command -v sudo);
+  if [ "$?" != "0" ]; 
+  then
+    printf -- 'You dont seem to have sudo installed. \n';
+    printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+    exit 1;
+  fi;
+
+  if ( [[ "$(command -v go)" ]] )
+  then
+    printf -- "You already have %s installed. \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
+
+    if go version | grep -q "$PACKAGE_VERSION" 
+    then
+      printf -- "Version detected: %s \n" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
+      printf -- "Not installing as requested version already installed. \n" | tee -a  "$LOG_FILE"
+      exit 1;
+    else
+      printf -- "You have %s installed but not the requested version %s. \n" "${PACKAGE_NAME}" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
+      if [[ $OVERRIDE ]]
+      then
+        printf -- 'Override (-o) flag is set \n' | tee -a  "$LOG_FILE"
+        exit 0;
+      fi
+      exit 1
+    fi
+    exit 1;
+  fi;
+}
+
+function cleanup()
+{
+  rm -rf "*.tar.gz"
+  printf -- 'Cleaned up the artifacts\n'  >> "$LOG_FILE"
+}
+
+function configureAndInstall()
+{
+  printf -- 'Configuration and Installation started \n'
+  # Install Go
+  printf -- 'Downloading go binaries \n'
+  wget https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
+  chmod ugo+r go1.10.1.linux-s390x.tar.gz
+
+  sudo rm -rf /usr/local/go
+  sudo tar -C /usr/local -xzf go1.10.1.linux-s390x.tar.gz
+
+  ln -s /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
+
+  if [[ "${ID}" != "ubuntu" ]]
+  then
+    sudo ln /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  >> "$LOG_FILE"
+    printf -- 'Symlink done for gcc \n'  >> "$LOG_FILE"
+  fi
+
+  printf -- "Installed %s %s successfully \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a  "$LOG_FILE"
+
+  cleanup
+}
+
+function logDetails()
 {
     printf -- '**************************** SYSTEM DETAILS *************************************************************\n' > "$LOG_FILE";
-    source "/etc/os-release" && cat "/etc/os-release" >> "$LOG_FILE"
+    cat "/etc/os-release" >> "$LOG_FILE"
     cat /proc/version >> "$LOG_FILE"
-    printf -- '*********************************************************************************************************\n' >> "$LOG_FILE"; 
+    printf -- '*********************************************************************************************************\n' >> "$LOG_FILE";
 
-    printf -- 'Detected %s \n' "$PRETTY_NAME"
-    printf -- 'Installing Go with version : %s \n' "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
+    printf -- "Detected %s \n" "$PRETTY_NAME"
+    printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
 }
 
 # Print the usage message
 function printHelp() {
+  echo 
   echo "Usage: "
-  echo "  install.sh [-s <silent>] [-d <debug>] [-v package-version]"
+  echo "  install.sh [-s <silent>] [-d <debug>] [-v package-version] [-o override] [-p check-prequisite]"
   echo "       default: If no -v specified, latest version will be installed"
   echo
 }
 
-while getopts "h?sdv:" opt; do
+while getopts "h?sdopv:" opt; do
   case "$opt" in
   h | \?)
     printHelp
@@ -49,7 +118,63 @@ while getopts "h?sdv:" opt; do
     ;;
   v)
     PACKAGE_VERSION="$OPTARG"
+    ;;
+  o)
+    OVERRIDE=true
+    ;;
+  p) 
+    checkPrequisites
+    ;;
   esac
 done
 
-getDetails
+function printSummary()
+{
+  printf '\n\nExecute command : '
+  go version | tee -a "$LOG_FILE"
+  printf -- "\n\nTips: \n"
+  printf -- "  Set GOROOT and GOPATH to get started \n"
+  printf -- "  More information can be found here : https://golang.org/cmd/go/ \n"
+  printf -- '\n'
+}
+
+###############################################################################################################
+
+logDetails
+checkPrequisites  #Check Prequisites
+
+DISTRO="$ID-$VERSION_ID"
+case "$DISTRO" in
+"ubuntu-16.04" | "ubuntu-18.04")
+  printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+  sudo apt-get update
+
+  if [[ "${VERSION_ID}" == "18.04" ]] 
+  then
+    printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
+    sudo apt install -y "$PACKAGE_NAME"="$PACKAGE_VERSION" |  tee -a >> "$LOG_FILE"
+  else
+    sudo apt-get install wget tar gcc
+    configureAndInstall
+  fi
+  ;;
+
+"rhel-7.3" | "rhel-7.4" | "rhel-7.5")
+  printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+  sudo yum install -y tar wget gcc
+  configureAndInstall
+  ;;
+
+"SLES-15")
+  printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+  sudo zypper install -y tar wget gcc
+  configureAndInstall
+  ;;
+
+*)
+  printf -- "%s not supported \n" "$DISTRO"| tee -a "$LOG_FILE"
+  exit 1 ;;
+esac
+
+# Print Summary
+printSummary
