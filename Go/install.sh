@@ -4,19 +4,19 @@
 
 set -e
 
-trap "" 2 ERR
-
-source "/etc/os-release"
-
 PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
-
 OVERRIDE=false
+
+trap cleanup 0 1 2 ERR
+
+source "/etc/os-release"
 
 function error_handle() {
   stty echo;
 }
+
 
 function checkPrequisites()
 {
@@ -59,6 +59,12 @@ function cleanup()
 function configureAndInstall()
 {
   printf -- 'Configuration and Installation started \n'
+
+  if [[ "${OVERRIDE}" == "true" ]]
+  then
+    printf -- 'Go exists on the system. Override flag is set to true hence updating the same\n ' | tee -a "$LOG_FILE"
+  fi
+
   # Install Go
   printf -- 'Downloading go binaries \n'
   wget https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
@@ -67,18 +73,23 @@ function configureAndInstall()
   sudo rm -rf /usr/local/go
   sudo tar -C /usr/local -xzf go1.10.1.linux-s390x.tar.gz
 
-  ln -s /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
   printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
 
   if [[ "${ID}" != "ubuntu" ]]
   then
-    sudo ln /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  >> "$LOG_FILE"
+    sudo ln -sf /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  >> "$LOG_FILE"
     printf -- 'Symlink done for gcc \n'  >> "$LOG_FILE"
   fi
 
-  printf -- "Installed %s %s successfully \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a  "$LOG_FILE"
-
-  cleanup
+  #Verify if go is configured correctly
+  if go version | grep -q "$PACKAGE_VERSION"
+  then
+    printf -- "Installed %s %s successfully \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a  "$LOG_FILE"
+  else
+    printf -- "Error while installing Go, exiting with 127 \n";
+    exit 127;
+  fi
 }
 
 function logDetails()
@@ -130,7 +141,7 @@ done
 
 function printSummary()
 {
-  printf '\n\nExecute command : '
+  printf 'Execute command : '
   go version | tee -a "$LOG_FILE"
   printf -- "\n\nTips: \n"
   printf -- "  Set GOROOT and GOPATH to get started \n"
