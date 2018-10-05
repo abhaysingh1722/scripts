@@ -51,7 +51,7 @@ function checkPrequisites()
     fi
 
     else
-   printf -- 'Go : No \n Pre-requsites satisfied \n'
+   printf -- 'Go : No \nPrequisites satisfied \n'
 
   fi;
 }
@@ -163,10 +163,12 @@ case "$DISTRO" in
   if [[ "${VERSION_ID}" == "18.04" ]] 
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
-    sudo apt install -y golang |  tee -a >> "$LOG_FILE"
+    printf -- 'Installing golang from repository' | tee -a "$LOG_FILE"
+    sudo apt install -y golang | tee -a "$LOG_FILE"
  
  else
-    sudo apt-get install wget tar gcc > /dev/null
+    printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
+    sudo apt-get install -y wget tar gcc > /dev/null
     configureAndInstall 
   fi
   ;;
