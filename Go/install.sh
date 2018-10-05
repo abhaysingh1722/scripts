@@ -23,7 +23,7 @@ function checkPrequisites()
 {
   if ( [[ "$(command -v sudo)" ]] )
         then
-                 printf -- 'Sudo installed';
+                 printf -- 'Sudo installed\n';
         else
                  printf -- 'You dont seem to have sudo installed. \n';
                  printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
@@ -49,7 +49,10 @@ function checkPrequisites()
       fi
       exit 1
     fi
-    exit 1;
+
+    else
+   printf -- '\nYou do not have Go installed\nUse -h for more help\n'
+
   fi;
 }
 
