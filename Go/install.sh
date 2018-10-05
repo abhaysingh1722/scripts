@@ -51,7 +51,7 @@ function checkPrequisites()
     fi
 
     else
-   printf -- 'Go : No (You are all set to run the install.sh) \n'
+   printf -- 'Go : No \n Pre-requsites satisfied \n'
 
   fi;
 }
