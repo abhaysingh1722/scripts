@@ -8,6 +8,7 @@ PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
+SILENT=false
 
 trap cleanup 0 1 2 ERR
 
@@ -20,13 +21,15 @@ function error_handle() {
 
 function checkPrequisites()
 {
-  _=$(command -v sudo);
-  if [ "$?" != "0" ]; 
-  then
-    printf -- 'You dont seem to have sudo installed. \n';
-    printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+  if ( [[ "$(command -v sudo)" ]] )
+        then
+                 printf -- 'Sudo installed';
+        else
+                 printf -- 'You dont seem to have sudo installed. \n';
+                 printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
+
 
   if ( [[ "$(command -v go)" ]] )
   then
@@ -119,6 +122,7 @@ while getopts "h?sdopv:" opt; do
     exit 0
     ;;
   s)
+    SILENT=true;
     stty -echo;
     trap error_handle INT;
     trap error_handle TERM;
@@ -158,22 +162,22 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  sudo apt-get update
+  sudo apt-get update > /dev/null
 
   if [[ "${VERSION_ID}" == "18.04" ]] 
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
     sudo apt install -y "$PACKAGE_NAME"="$PACKAGE_VERSION" |  tee -a >> "$LOG_FILE"
   fi
-  
-    sudo apt-get install wget tar gcc
-    configureAndInstall
+
+    sudo apt-get install wget tar gcc > /dev/null
+    configureAndInstall 
 
   ;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  sudo yum install -y tar wget gcc
+  sudo yum install -y tar wget gcc 
   configureAndInstall
   ;;
 
