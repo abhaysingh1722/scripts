@@ -9,6 +9,7 @@ PACKAGE_VERSION="1.10.1"
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
+
 trap cleanup 0 1 2 ERR
 
 source "/etc/os-release"
@@ -20,13 +21,15 @@ function error_handle() {
 
 function checkPrequisites()
 {
-  _=$(command -v sudo);
-  if [ "$?" != "0" ]; 
-  then
-    printf -- 'You dont seem to have sudo installed. \n';
-    printf -- 'Please install sudo from repository using apt, yum or zypper based on your distro. \n';
+  if ( [[ "$(command -v sudo)" ]] )
+        then
+                 printf -- 'Sudo installed\n';
+        else
+                 printf -- 'You dont seem to have sudo installed. \n';
+                 printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
+
 
   if ( [[ "$(command -v go)" ]] )
   then
@@ -46,7 +49,10 @@ function checkPrequisites()
       fi
       exit 1
     fi
-    exit 1;
+
+    else
+   printf -- '\nYou do not have Go installed\nUse -h for more help\n'
+
   fi;
 }
 
@@ -136,6 +142,7 @@ done
 
 function printSummary()
 {
+  
   printf -- "\n\nTips: \n"
   printf -- "  Set GOROOT and GOPATH to get started \n"
   printf -- "  More information can be found here : https://golang.org/cmd/go/ \n"
@@ -151,21 +158,22 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  sudo apt-get update
+  sudo apt-get update > /dev/null
 
   if [[ "${VERSION_ID}" == "18.04" ]] 
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
     sudo apt install -y golang |  tee -a >> "$LOG_FILE"
-  else
-    sudo apt-get install wget tar gcc
-    configureAndInstall
+ 
+ else
+    sudo apt-get install wget tar gcc > /dev/null
+    configureAndInstall 
   fi
   ;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  sudo yum install -y tar wget gcc
+  sudo yum install -y tar wget gcc 
   configureAndInstall
   ;;
 
