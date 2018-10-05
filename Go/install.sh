@@ -24,7 +24,7 @@ function checkPrequisites()
   if [ "$?" != "0" ]; 
   then
     printf -- 'You dont seem to have sudo installed. \n';
-    printf -- 'Please install sudo from repository using apt, yum or zypper based on your distro. \n';
+    printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
 
@@ -112,11 +112,17 @@ function printHelp() {
   echo
 }
 
-while getopts "h?dopv:" opt; do
+while getopts "h?sdopv:" opt; do
   case "$opt" in
   h | \?)
     printHelp
     exit 0
+    ;;
+  s)
+    stty -echo;
+    trap error_handle INT;
+    trap error_handle TERM;
+    trap error_handle EXIT;
     ;;
   d)
     set -x
@@ -129,13 +135,14 @@ while getopts "h?dopv:" opt; do
     ;;
   p) 
     checkPrequisites
-    exit 0
     ;;
   esac
 done
 
 function printSummary()
 {
+  printf 'Execute command : '
+  go version | tee -a "$LOG_FILE"
   printf -- "\n\nTips: \n"
   printf -- "  Set GOROOT and GOPATH to get started \n"
   printf -- "  More information can be found here : https://golang.org/cmd/go/ \n"
@@ -156,11 +163,12 @@ case "$DISTRO" in
   if [[ "${VERSION_ID}" == "18.04" ]] 
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
-    sudo apt install -y golang |  tee -a >> "$LOG_FILE"
-  else
+    sudo apt install -y "$PACKAGE_NAME"="$PACKAGE_VERSION" |  tee -a >> "$LOG_FILE"
+  fi
+  
     sudo apt-get install wget tar gcc
     configureAndInstall
-  fi
+
   ;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
@@ -169,7 +177,7 @@ case "$DISTRO" in
   configureAndInstall
   ;;
 
-"sles-15")
+"SLES-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   sudo zypper install -y tar wget gcc
   configureAndInstall
