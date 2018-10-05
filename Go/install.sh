@@ -23,9 +23,9 @@ function checkPrequisites()
 {
   if ( [[ "$(command -v sudo)" ]] )
         then
-                 printf -- 'Sudo installed\n';
+                 printf -- 'Sudo : Yes\n';
         else
-                 printf -- 'You dont seem to have sudo installed. \n';
+                 printf -- 'Sudo : No \n';
                  printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
@@ -33,25 +33,25 @@ function checkPrequisites()
 
   if ( [[ "$(command -v go)" ]] )
   then
-    printf -- "You already have %s installed. \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
+    printf -- "Go : Yes" | tee -a  "$LOG_FILE"
 
     if go version | grep -q "$PACKAGE_VERSION" 
     then
-      printf -- "Version detected: %s \n" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
-      printf -- "Not installing as requested version already installed. \n" | tee -a  "$LOG_FILE"
+      printf -- "Version : %s (Satisfied) \n" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
+      printf -- "No update required for Go \n" | tee -a  "$LOG_FILE"
       exit 1;
     else
-      printf -- "You have %s installed but not the requested version %s. \n" "${PACKAGE_NAME}" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
+      printf -- "Version : Outdated \n" | tee -a  "$LOG_FILE"
       if [[ $OVERRIDE ]]
       then
-        printf -- 'Override (-o) flag is set \n' | tee -a  "$LOG_FILE"
+        printf -- 'Override Packages : Yes \n' | tee -a  "$LOG_FILE"
         exit 0;
       fi
       exit 1
     fi
 
     else
-   printf -- '\nYou do not have Go installed\nUse -h for more help\n'
+   printf -- 'Go : No \n'
 
   fi;
 }
