@@ -6,6 +6,10 @@ set -e
 
 PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
+GOPATH="/usr/local/lib/"
+WORKDIR="/usr/local"
+CURDIR="$(pwd)"
+
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
@@ -56,44 +60,48 @@ function configureAndInstall() {
 		printf -- 'cAdvisor exists on the system. Override flag is set to true hence updating the same\n ' | tee -a "$LOG_FILE"
 	fi
 
-	# Install go
-	wget https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh -O go_setup.sh
-	bash go_setup.sh
-	printf -- "GO Installation done...\n" | tee -a "$LOG_FILE"
+
 
 	# Check if Go installed
-	if ([[ "$(command -v go)" ]]); then
-		printf -- "GO Installation verified... continue with cadvisor installation...\n" | tee -a "$LOG_FILE"
-
+	if ( [[ "$(command -v go)" ]]); then
+		
+         printf -- "GO Installation verified... continue with cadvisor installation...\n" | tee -a "$LOG_FILE"
+      
+        else
+	       # Install go
+       # wget https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh -O go_setup.sh
+        wget https://raw.githubusercontent.com/sid226/scripts/master/Go/install.sh -O go_setup.sh
+       
+        bash go_setup.sh
+    fi
+	  
+       
 		# Install cAdvisor
 		printf -- 'Installing cAdvisor..... \n'
-
-		# Export go path
-		export GOPATH=/usr/local/lib/
-		export PATH=$PATH:$GOPATH/bin
-
+        
 		#  Install godep tool
 		cd /usr/local/lib/
 		go get github.com/tools/godep
 		printf -- 'Installed godep tool in /usr/local \n' >>"$LOG_FILE"
 
 		# Checkout the code from repository
-		mkdir -p $GOPATH/src/github.com/google
-		cd $GOPATH/src/github.com/google
+		mkdir -p ${GOPATH}/src/github.com/google
+		cd ${GOPATH}/src/github.com/google
 		git clone https://github.com/google/cadvisor.git
 		cd cadvisor
 		git checkout "v${PACKAGE_VERSION}"
 		printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
 
+        cd "${CURDIR}"
+     
 		# Replace the crc32.go file
-		cp files/crc32.go $GOPATH/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
+		cp files/crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
 
 		# Build cAdvisor
-		cd $GOPATH/src/github.com/google/cadvisor
+		cd ${GOPATH}/src/github.com/google/cadvisor
 		godep go build .
 
 		#Verify if cAdvisor is configured correctly
-		#Verify if go is configured correctly
 		if cadvisor --version | grep -q "$PACKAGE_VERSION"; then
 			printf -- "Installed %s %s successfully \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
 		else
@@ -101,11 +109,9 @@ function configureAndInstall() {
 			exit 127
 		fi
 
-	else
-		printf -- "Error while installing %s Go not installed correctly, exiting with 127 \n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-		exit 127
 
-	fi
+        
+	
 
 }
 
@@ -179,7 +185,7 @@ case "$DISTRO" in
 		printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
 		sudo apt install -y "$PACKAGE_NAME"="$PACKAGE_VERSION" | tee -a >>"$LOG_FILE"
 	else
-		sudo apt-get install wget git libseccomp-dev curl
+		sudo apt-get install -y wget git libseccomp-dev curl
 		configureAndInstall
 	fi
 	;;
