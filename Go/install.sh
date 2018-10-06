@@ -51,14 +51,14 @@ function checkPrequisites()
     fi
 
     else
-   printf -- 'Go : No \nPrequisites satisfied \n'
+   printf -- 'Go : No \nPrequisites satisfied \n\n'
 
   fi;
 }
 
 function cleanup()
 {
-  rm -rf "*.tar.gz"
+  rm -rf go1.10.1.linux-s390x.tar.gz
   printf -- 'Cleaned up the artifacts\n'  >> "$LOG_FILE"
 }
 
@@ -73,7 +73,7 @@ function configureAndInstall()
 
   # Install Go
   printf -- 'Downloading go binaries \n'
-  wget https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
+  wget -q https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
   chmod ugo+r go1.10.1.linux-s390x.tar.gz
 
   sudo rm -rf /usr/local/go
