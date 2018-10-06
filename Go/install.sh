@@ -10,7 +10,7 @@ LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
 
-trap cleanup 0 1 2 ERR
+trap "" 1 2 ERR
 
 source "/etc/os-release"
 
@@ -87,6 +87,9 @@ function configureAndInstall()
     sudo ln -sf /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  >> "$LOG_FILE"
     printf -- 'Symlink done for gcc \n'  >> "$LOG_FILE"
   fi
+
+  #Clean up the downloaded zip
+  cleanup
 
   #Verify if go is configured correctly
   if go version | grep -q "$PACKAGE_VERSION"
@@ -190,5 +193,4 @@ case "$DISTRO" in
   exit 1 ;;
 esac
 
-# Print Summary
 printSummary
