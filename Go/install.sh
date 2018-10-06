@@ -12,12 +12,13 @@ OVERRIDE=false
 
 trap "" 1 2 ERR
 
-source "/etc/os-release"
-
-function error_handle() {
-  stty echo;
-}
-
+# Need handling for RHEL 6.10 as it doesn't have os-release file
+if [ -f "/etc/os-release" ]; then
+	source "/etc/os-release"
+else
+	export ID="rhel"
+  export VERSION_ID="6.x"
+fi
 
 function checkPrequisites()
 {
@@ -176,7 +177,7 @@ case "$DISTRO" in
   fi
   ;;
 
-"rhel-7.3" | "rhel-7.4" | "rhel-7.5")
+"rhel-7.3" | "rhel-7.4" | "rhel-7.5" | "rhel-6.x")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
   sudo yum install -y tar wget gcc  >> "$LOG_FILE"
