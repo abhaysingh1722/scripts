@@ -178,12 +178,14 @@ case "$DISTRO" in
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  sudo yum install -y tar wget gcc 
+  printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
+  sudo yum install -y tar wget gcc  >> "$LOG_FILE"
   configureAndInstall
   ;;
 
 "sles-12.3" | "sles-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+  printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
   sudo zypper install -y tar wget gcc
   configureAndInstall
   ;;
