@@ -105,7 +105,11 @@ function configureAndInstall()
 function logDetails()
 {
     printf -- '**************************** SYSTEM DETAILS *************************************************************\n' > "$LOG_FILE";
-    cat "/etc/os-release" >> "$LOG_FILE"
+    
+    if [ -f "/etc/os-release" ]; then
+	    cat "/etc/os-release" >> "$LOG_FILE"
+    fi
+    
     cat /proc/version >> "$LOG_FILE"
     printf -- '*********************************************************************************************************\n' >> "$LOG_FILE";
 
