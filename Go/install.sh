@@ -16,8 +16,10 @@ trap "" 1 2 ERR
 if [ -f "/etc/os-release" ]; then
 	source "/etc/os-release"
 else
+  cat /etc/redhat-release >> "${LOG_FILE}"
 	export ID="rhel"
   export VERSION_ID="6.x"
+  export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
 fi
 
 function checkPrequisites()
