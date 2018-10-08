@@ -6,8 +6,6 @@ set -e
 
 PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
-GOPATH="/usr/local/lib/"
-WORKDIR="/usr/local"
 CURDIR="$(pwd)"
 
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
@@ -29,7 +27,9 @@ function checkPrequisites() {
 		exit 1
 	fi
 
-	if ([[ "$(command -v cadvisor)" ]]); then
+
+
+	if (( $(ps -ef | grep -v grep | grep $PACKAGE_NAME | wc -l) > 0 )); then
 		printf -- "You already have %s installed. \n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 
 		if cadvisor --version | grep -q "$PACKAGE_VERSION"; then
@@ -79,8 +79,14 @@ function configureAndInstall() {
 		# Install cAdvisor
 		printf -- 'Installing cAdvisor..... \n'
         
+		# Export go path
+		export GOPATH="/usr/local/lib" 
+		export PATH=$PATH:$GOPATH/bin
+		
+		printenv 
+		
 		#  Install godep tool
-		cd /usr/local/lib/
+		cd ${GOPATH}
 		go get github.com/tools/godep
 		printf -- 'Installed godep tool in /usr/local \n' >>"$LOG_FILE"
 
@@ -93,7 +99,7 @@ function configureAndInstall() {
 		printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
 
         cd "${CURDIR}"
-     
+	
 		# Replace the crc32.go file
 		cp files/crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
 
@@ -101,16 +107,8 @@ function configureAndInstall() {
 		cd ${GOPATH}/src/github.com/google/cadvisor
 		godep go build .
 
-		#Verify if cAdvisor is configured correctly
-		if cadvisor --version | grep -q "$PACKAGE_VERSION"; then
-			printf -- "Installed %s %s successfully \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
-		else
-			printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_VERSION"
-			exit 127
-		fi
-
-
-        
+		printf -- 'Build cAdvisor successfully \n' >>"$LOG_FILE"
+   
 	
 
 }
