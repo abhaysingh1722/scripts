@@ -174,7 +174,7 @@ case "$DISTRO" in
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
     printf -- 'Installing golang from repository' | tee -a "$LOG_FILE"
-    sudo apt install -y golang | tee -a "$LOG_FILE"
+    sudo apt-get install -y golang | tee -a "$LOG_FILE"
  
  else
     printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
