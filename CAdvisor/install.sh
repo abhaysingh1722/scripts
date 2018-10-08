@@ -68,10 +68,8 @@ function configureAndInstall() {
          printf -- "GO Installation verified... continue with cadvisor installation...\n" | tee -a "$LOG_FILE"
       
         else
-	       # Install go
-       # wget https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh -O go_setup.sh
-        wget https://raw.githubusercontent.com/sid226/scripts/master/Go/install.sh -O go_setup.sh
-       
+	    # Install go
+        wget https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh -O go_setup.sh
         bash go_setup.sh
     fi
 	  
@@ -163,6 +161,10 @@ function printSummary() {
 	printf 'Execute command : '
 	# tips
 	printf -- "\n\nTips: \n"
+	printf -- "\n export GOPATH=/usr/local/lib \n"
+    printf -- "\n export PATH=\$PATH:\$GOPATH/bin \n"
+	printf -- "\n cd \$GOPATH/src/github.com/google/cadvisor  \n"
+	printf -- "\n sudo ./cadvisor  \n"
 	printf -- "\nAccess cAdvisor web user interface from browser \n"
 	printf -- "\nhttp://<host-ip>:<http-port>/ \n"
 	printf -- '\n'
