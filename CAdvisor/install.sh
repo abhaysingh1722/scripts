@@ -13,43 +13,44 @@ OVERRIDE=false
 
 trap cleanup 0 1 2 ERR
 
-source "/etc/os-release"
-
-function error_handle() {
-	stty echo
-}
+# Need handling for RHEL 6.10 as it doesn't have os-release file
+if [ -f "/etc/os-release" ]; then
+	source "/etc/os-release"
+else
+  cat /etc/redhat-release >> "${LOG_FILE}"
+	export ID="rhel"
+  export VERSION_ID="6.x"
+  export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
+fi
 
 function checkPrequisites() {
-	_=$(command -v sudo)
-	if [ "$?" != "0" ]; then
-		printf -- 'You dont seem to have sudo installed. \n'
-		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
-		exit 1
-	fi
+ if ( [[ "$(command -v sudo)" ]] )
+        then
+                 printf -- 'Sudo : Yes\n';
+        else
+                 printf -- 'Sudo : No \n';
+                 printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+    exit 1;
+  fi;
 
 
+	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then
+		printf -- "%s : Yes" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
 
-	if (( $(ps -ef | grep -v grep | grep $PACKAGE_NAME | wc -l) > 0 )); then
-		printf -- "You already have %s installed. \n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-
-		if cadvisor --version | grep -q "$PACKAGE_VERSION"; then
-			printf -- "Version detected: %s \n" "${PACKAGE_VERSION}" | tee -a "$LOG_FILE"
-			printf -- "Not installing as requested version already installed. \n" | tee -a "$LOG_FILE"
-			exit 1
-		else
-			printf -- "You have %s installed but not the requested version %s. \n" "${PACKAGE_NAME}" "${PACKAGE_VERSION}" | tee -a "$LOG_FILE"
 			if [[ $OVERRIDE ]]; then
 				printf -- 'Override (-o) flag is set \n' | tee -a "$LOG_FILE"
 				exit 0
 			fi
-			exit 1
-		fi
-		exit 1
-	fi
+
+	 else
+   printf -- 'Go : No \nPrequisites satisfied \n\n'
+
+  fi;
 }
 
 function cleanup() {
-	rm -rf "*.tar.gz"
+	# Remove artifacts
+	rm -rf ${GOPATH}/src/github.com/google/cadvisor
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -69,24 +70,29 @@ function configureAndInstall() {
       
         else
 	    # Install go
-        wget https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh -O go_setup.sh
-        bash go_setup.sh
-    fi
+        curl https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh | bash
+	 fi
 	  
        
 		# Install cAdvisor
 		printf -- 'Installing cAdvisor..... \n'
         
-		# Export go path
-		export GOPATH="/usr/local/lib" 
+		# Set GOPATH if not already set
+		if [[ -z "${GOPATH}" ]]; then
+		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
+		mkdir $HOME/go
+		export GOPATH="$HOME/go" 
 		export PATH=$PATH:$GOPATH/bin
+		else
+		printf -- "GOPATH already set \n" >>"$LOG_FILE"
+		fi
 		
 		printenv 
 		
 		#  Install godep tool
 		cd ${GOPATH}
 		go get github.com/tools/godep
-		printf -- 'Installed godep tool in /usr/local \n' >>"$LOG_FILE"
+		printf -- 'Installed godep tool at GOPATH \n' >>"$LOG_FILE"
 
 		# Checkout the code from repository
 		mkdir -p ${GOPATH}/src/github.com/google
@@ -97,18 +103,31 @@ function configureAndInstall() {
 		printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
 
         cd "${CURDIR}"
-	
+		# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
+		wget https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files/crc32.go
+
 		# Replace the crc32.go file
-		cp files/crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
+		cp crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
 
 		# Build cAdvisor
 		cd ${GOPATH}/src/github.com/google/cadvisor
 		godep go build .
-
-		printf -- 'Build cAdvisor successfully \n' >>"$LOG_FILE"
-   
+		
+		# Add cadvisor to /usr/bin
+		 cp ${GOPATH}/src/github.com/google/cadvisor/cadvisor  /usr/bin/
 	
-
+		printf -- 'Build cAdvisor successfully \n' >>"$LOG_FILE"
+		
+		#Verify cadvisor installation
+		
+	    if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then
+		
+         printf -- " %s Installation verified... continue with cadvisor installation...\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+      
+         else
+			printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
+			exit 127;
+		fi
 }
 
 function logDetails() {
@@ -161,12 +180,10 @@ function printSummary() {
 	printf 'Execute command : '
 	# tips
 	printf -- "\n\nTips: \n"
-	printf -- "\n export GOPATH=/usr/local/lib \n"
-    printf -- "\n export PATH=\$PATH:\$GOPATH/bin \n"
-	printf -- "\n cd \$GOPATH/src/github.com/google/cadvisor  \n"
-	printf -- "\n sudo ./cadvisor  \n"
-	printf -- "\nAccess cAdvisor web user interface from browser \n"
-	printf -- "\nhttp://<host-ip>:<http-port>/ \n"
+	printf -- "\nRunning Cadvisor: \n"
+	printf -- "\n cadvisor  \n"
+	printf -- "\n\nAccess cAdvisor web user interface from browser \n"
+	printf -- "\nhttp://<host-ip>:8080/ \n"
 	printf -- '\n'
 }
 
@@ -196,7 +213,7 @@ case "$DISTRO" in
 	configureAndInstall
 	;;
 
-"sles-15")
+"sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo zypper install -y git libseccomp-devel wget tar curl gcc
 	configureAndInstall
