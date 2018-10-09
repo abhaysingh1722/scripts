@@ -177,7 +177,7 @@ case "$DISTRO" in
     sudo apt-get install -y golang | tee -a "$LOG_FILE"
  
  else
-    printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
+    printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
     sudo apt-get install -y wget tar gcc > /dev/null
     configureAndInstall 
   fi
@@ -185,14 +185,14 @@ case "$DISTRO" in
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5" | "rhel-6.x")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
+  printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
   sudo yum install -y tar wget gcc  >> "$LOG_FILE"
   configureAndInstall
   ;;
 
 "sles-12.3" | "sles-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-  printf -- 'Installing the dependencies for Go from repository' | tee -a "$LOG_FILE"
+  printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
   sudo zypper install -y tar wget gcc
   configureAndInstall
   ;;
