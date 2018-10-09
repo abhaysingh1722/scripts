@@ -197,14 +197,8 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get update
-
-	if [[ "${VERSION_ID}" == "18.04" ]]; then
-		printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
-		sudo apt install -y "$PACKAGE_NAME"="$PACKAGE_VERSION" | tee -a >>"$LOG_FILE"
-	else
-		sudo apt-get install -y wget git libseccomp-dev curl
-		configureAndInstall
-	fi
+	sudo apt-get install -y wget git libseccomp-dev curl
+	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
