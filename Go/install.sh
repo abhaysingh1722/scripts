@@ -153,7 +153,7 @@ done
 function printSummary()
 {
   
-  printf -- "\n\nTips: \n"
+  printf -- "\n\nUsage: \n"
   printf -- "  Set GOROOT and GOPATH to get started \n"
   printf -- "  More information can be found here : https://golang.org/cmd/go/ \n"
   printf -- '\n'
