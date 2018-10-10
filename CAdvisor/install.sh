@@ -50,6 +50,7 @@ function checkPrequisites() {
 
 function cleanup() {
 	rm -rf ${GOPATH}/src/github.com/google/cadvisor
+	rm -rf ${CURDIR}/crc32.go
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -78,7 +79,7 @@ function configureAndInstall() {
 			printf -- "GOPATH already set : Value : $GOPATH \n" >> "$LOG_FILE"
 		fi
 		
-			printenv 
+			printenv >> "$LOG_FILE"
 		
 			#  Install godep tool
 			cd $GOPATH
@@ -109,8 +110,10 @@ function configureAndInstall() {
 			cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
 			printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
 		
-			#Verify cadvisor installation
-		
+			#Cleanup
+			cleanup
+
+			#Verify cadvisor installation		
 	    	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then		
          		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
          	else
