@@ -7,8 +7,9 @@ set -e
 PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
+GO_DEFAULT="$HOME/go"
 
-LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
 trap cleanup 0 1 2 ERR
@@ -37,7 +38,7 @@ function checkPrequisites() {
 	# Ask user for prerequisite installation
 printf -- "\n\n Installation requires GO:1.10.1 as Prequisite\n";
 while true; do
-    read -p "\n\n Do you wish to continue installing GO 1.10.1?" yn
+    read -p "Do you wish to continue installing GO 1.10.1?" yn
     case $yn in
         [Yy]* ) printf -- 'Selected Yes for prerequisite installation \n\n' | tee -a "$LOG_FILE"; break;;
         [Nn]* ) exit;;
@@ -60,17 +61,10 @@ function configureAndInstall() {
 		printf -- 'cAdvisor exists on the system. Override flag is set to true hence updating the same\n ' | tee -a "$LOG_FILE"
 	fi
 
-
-
-	# Check if Go installed
-	if ( [[ "$(command -v go)" ]]); then
-		
-         printf -- "GO Installation verified... continue with cadvisor installation...\n" | tee -a "$LOG_FILE"
-      
-        else
 	    # Install go
+		printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
         curl https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh | bash
-	 fi
+
 	  
        
 		# Install cAdvisor
@@ -79,8 +73,15 @@ function configureAndInstall() {
 		# Set GOPATH if not already set
 		if [[ -z "${GOPATH}" ]]; then
 		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
-		mkdir $HOME/go
-		export GOPATH="$HOME/go" 
+			
+        #Check if go directory exists
+         if [ ! -d $HOME/go ]; then
+               mkdir $HOME/go
+         fi
+
+        #mkdir $HOME/go
+        export GOPATH="${GO_DEFAULT}"
+
 		export PATH=$PATH:$GOPATH/bin
 		else
 		printf -- "GOPATH already set \n" >>"$LOG_FILE"
