@@ -8,9 +8,10 @@ PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
+GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh"
+REPO_URL="https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files"
 
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
-OVERRIDE=false
 
 trap cleanup 0 1 2 ERR
 
@@ -36,20 +37,19 @@ function checkPrequisites() {
 
 
 # Ask user for prerequisite installation
-printf -- "\n\n As part of the installation , Go 1.10.1 will be installed,\n";
+printf -- "\n\n As part of the installation , Go 1.10.1 will be installed, \n";
 while true; do
-    read -p "Do you want to continue ?: " yn
+    read -r "Do you want to continue ?: " yn
     case $yn in
-        [Yy]* ) printf -- 'Selected Yes for prerequisite installation \n\n' | tee -a "$LOG_FILE"; break;;
+        [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+				break;;
         [Nn]* ) exit;;
-        * ) echo "Please answer yes or no.";;
+        * ) 	echo "Please provide confirmation to proceed.";;
     esac
 done
-
 }
 
 function cleanup() {
-	# Remove artifacts
 	rm -rf ${GOPATH}/src/github.com/google/cadvisor
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
@@ -59,71 +59,64 @@ function configureAndInstall() {
 
 	    # Install go
 		printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-        curl https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh | bash
+        curl $GO_INSTALL_URL | bash
 
-	  
-       
 		# Install cAdvisor
 		printf -- 'Installing cAdvisor..... \n'
         
 		# Set GOPATH if not already set
 		if [[ -z "${GOPATH}" ]]; then
-		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
+			printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
 			
-        #Check if go directory exists
-         if [ ! -d $HOME/go ]; then
+        	#Check if go directory exists
+        	 if [ ! -d $HOME/go ]; then
                mkdir $HOME/go
-         fi
+         	fi
 
-        #mkdir $HOME/go
-        export GOPATH="${GO_DEFAULT}"
-
-		export PATH=$PATH:$GOPATH/bin
+        	export GOPATH="${GO_DEFAULT}"
+			export PATH=$PATH:$GOPATH/bin
 		else
-		printf -- "GOPATH already set \n" >>"$LOG_FILE"
+			printf -- "GOPATH already set : Value : $GOPATH \n" >> "$LOG_FILE"
 		fi
 		
-		printenv 
+			printenv 
 		
-		#  Install godep tool
-		cd ${GOPATH}
-		go get github.com/tools/godep
-		printf -- 'Installed godep tool at GOPATH \n' >>"$LOG_FILE"
+			#  Install godep tool
+			cd $GOPATH
+			go get github.com/tools/godep
+			printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
 
-		# Checkout the code from repository
-		mkdir -p ${GOPATH}/src/github.com/google
-		cd ${GOPATH}/src/github.com/google
-		git clone https://github.com/google/cadvisor.git
-		cd cadvisor
-		git checkout "v${PACKAGE_VERSION}"
-		printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
+			# Checkout the code from repository
+			mkdir -p ${GOPATH}/src/github.com/google
+			cd "${GOPATH}/src/github.com/google"
+			git clone https://github.com/google/cadvisor.git
+			cd cadvisor
+			git checkout "v${PACKAGE_VERSION}"
+			printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
 
-        cd "${CURDIR}"
-		# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-		wget https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files/crc32.go
+        	cd "${CURDIR}"
+			# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
+			wget $REPO_URL/crc32.go
 
-		# Replace the crc32.go file
-		cp crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
+			# Replace the crc32.go file
+			cp crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
 
-		# Build cAdvisor
-		cd ${GOPATH}/src/github.com/google/cadvisor
-		godep go build .
+			# Build cAdvisor
+			cd "${GOPATH}/src/github.com/google/cadvisor"
+			godep go build .
 		
-		# Add cadvisor to /usr/bin
-		 cp ${GOPATH}/src/github.com/google/cadvisor/cadvisor  /usr/bin/
-	
-		printf -- 'Build cAdvisor successfully \n' >>"$LOG_FILE"
+			# Add cadvisor to /usr/bin
+			cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
+			printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
 		
-		#Verify cadvisor installation
+			#Verify cadvisor installation
 		
-	    if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then
-		
-         printf -- " %s Installation verified... continue with cadvisor installation...\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-      
-         else
-			printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
-			exit 127;
-		fi
+	    	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then		
+         		printf -- " %s Installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+         	else
+				printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
+				exit 127;
+			fi
 }
 
 function logDetails() {
@@ -162,12 +155,11 @@ done
 
 function printSummary() {
 	printf 'Execute command : '
-	# tips
 	printf -- "\n\nUsage: \n"
-	printf -- "\nRunning Cadvisor: \n"
-	printf -- "\n cadvisor  \n"
-	printf -- "\n\nAccess cAdvisor web user interface from browser \n"
-	printf -- "\nhttp://<host-ip>:8080/ \n"
+	printf -- "Running Cadvisor: \n"
+	printf -- " cadvisor  \n"
+	printf -- "\nAccess cAdvisor web user interface from browser \n"
+	printf -- "http://<host-ip>:8080/ \n"
 	printf -- '\n'
 }
 
@@ -203,5 +195,4 @@ case "$DISTRO" in
 	;;
 esac
 
-# Print Summary
 printSummary

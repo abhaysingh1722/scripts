@@ -7,8 +7,6 @@ set -e
 PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
 LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
-OVERRIDE=false
-
 
 trap "" 1 2 ERR
 
@@ -38,24 +36,17 @@ function checkPrequisites()
   then
     printf -- "Go : Yes" | tee -a  "$LOG_FILE"
 
-    if go version | grep -q "$PACKAGE_VERSION" 
-    then
-      printf -- "Version : %s (Satisfied) \n" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
-      printf -- "No update required for Go \n" | tee -a  "$LOG_FILE"
-      exit 1;
-    else
-      printf -- "Version : Outdated \n" | tee -a  "$LOG_FILE"
-      if [[ $OVERRIDE ]]
-      then
-        printf -- 'Override Packages : Yes \n' | tee -a  "$LOG_FILE"
-        exit 0;
-      fi
-      exit 1
-    fi
-
-    else
-   printf -- 'Go : No \nPrequisites satisfied \n\n'
-
+   # Ask user for prerequisite installation
+  printf -- "\n\n As part of the installation , Go 1.10.1 will be installed, \n";
+    while true; do
+      read -r "Do you want to continue ?: " yn
+      case $yn in
+        [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+				break;;
+        [Nn]* ) exit;;
+        * ) 	echo "Please provide confirmation to proceed.";;
+      esac
+    done
   fi;
 }
 
@@ -68,11 +59,6 @@ function cleanup()
 function configureAndInstall()
 {
   printf -- 'Configuration and Installation started \n'
-
-  if [[ "${OVERRIDE}" == "true" ]]
-  then
-    printf -- 'Go exists on the system. Override flag is set to true hence updating the same\n ' | tee -a "$LOG_FILE"
-  fi
 
   # Install Go
   printf -- 'Downloading go binaries \n'
@@ -128,7 +114,7 @@ function printHelp() {
   echo
 }
 
-while getopts "h?dopv:" opt; do
+while getopts "h?dpv:" opt; do
   case "$opt" in
   h | \?)
     printHelp
@@ -139,9 +125,6 @@ while getopts "h?dopv:" opt; do
     ;;
   v)
     PACKAGE_VERSION="$OPTARG"
-    ;;
-  o)
-    OVERRIDE=true
     ;;
   p) 
     checkPrequisites
