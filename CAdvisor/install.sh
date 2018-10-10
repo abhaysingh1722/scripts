@@ -79,52 +79,52 @@ function configureAndInstall() {
 			printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >> "$LOG_FILE"
 		fi
 		
-			printenv >> "$LOG_FILE"
+		printenv >> "$LOG_FILE"
 		
-			#  Install godep tool
-			cd "$GOPATH"
-			go get github.com/tools/godep
-			printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
+		#  Install godep tool
+		cd "$GOPATH"
+		go get github.com/tools/godep
+		printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
 
-			# Checkout the code from repository
-			mkdir -p "${GOPATH}/src/github.com/google"
-			cd "${GOPATH}/src/github.com/google"
-			printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
-			git clone https://github.com/google/cadvisor.git  >> "$LOG_FILE"
-			cd cadvisor
-			git checkout "v${PACKAGE_VERSION}"  >> "$LOG_FILE"
-			printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
+		# Checkout the code from repository
+		mkdir -p "${GOPATH}/src/github.com/google"
+		cd "${GOPATH}/src/github.com/google"
 
-        	cd "${CURDIR}"
-			# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-			wget -q $REPO_URL/crc32.go
+		printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
+		git clone -b "v${PACKAGE_VERSION}" https://github.com/google/cadvisor.git  >> "$LOG_FILE"
+		cd cadvisor
+		printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
 
-			# Replace the crc32.go file
-			cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
-
-			# Build cAdvisor
-			cd "${GOPATH}/src/github.com/google/cadvisor"
-			godep go build .
+        cd "${CURDIR}"
+		# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
+		wget -q $REPO_URL/crc32.go
 		
-			# Add cadvisor to /usr/bin
-			cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
-			printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
+		# Replace the crc32.go file
+		cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
 		
-			#Cleanup
-			cleanup
-
-			#Verify cadvisor installation		
-	    	if  command -v "$PACKAGE_NAME" > /dev/null ; then		
-         		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-         	else
-				printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
-				exit 127;
-			fi
+		# Build cAdvisor
+		cd "${GOPATH}/src/github.com/google/cadvisor"
+		godep go build .
+		
+		# Add cadvisor to /usr/bin
+		cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
+		printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
+		
+		#Cleanup
+		cleanup
+		
+		#Verify cadvisor installation		
+	    if  command -v "$PACKAGE_NAME" > /dev/null ; then		
+        		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+        else
+			printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
+			exit 127;
+		fi
 }
 
 function logDetails() {
 	printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
-	 if [ -f "/etc/os-release" ]; then
+	if [ -f "/etc/os-release" ]; then
 	    cat "/etc/os-release" >> "$LOG_FILE"
     fi
     
