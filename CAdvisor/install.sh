@@ -140,7 +140,7 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh [-s <silent>] [-d <debug>] [-v package-version] [-o override] [-p check-prequisite]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-p check-prequisite]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
