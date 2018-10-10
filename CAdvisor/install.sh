@@ -26,27 +26,26 @@ else
 fi
 
 function checkPrequisites() {
- if ( [[ "$(command -v sudo)" ]] )
+	if ( [[ "$(command -v sudo)" ]] )
         then
-                 printf -- 'Sudo : Yes\n' >> "$LOGFILE"
+            printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
         else
-                 printf -- 'Sudo : No \n' >> "$LOGFILE"
-                 printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
-    exit 1;
-  fi;
+            printf -- 'Sudo : No \n' >> "$LOG_FILE"
+            printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+    		exit 1;
+  	fi;
 
-
-# Ask user for prerequisite installation
-printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
-while true; do
-    read -p "Do you want to continue (y/n) ? :  " yn
-    case $yn in
-        [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+	# Ask user for prerequisite installation
+	printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
+	while true; do
+    	read -p "Do you want to continue (y/n) ? :  " yn
+    	case $yn in
+      	 	[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
 				break;;
-        [Nn]* ) exit;;
-        * ) 	echo "Please provide confirmation to proceed.";;
-    esac
-done
+        	[Nn]* ) exit;;
+        	* ) 	echo "Please provide confirmation to proceed.";;
+   		 esac
+	done
 }
 
 function cleanup() {
