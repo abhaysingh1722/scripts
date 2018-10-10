@@ -35,10 +35,10 @@ function checkPrequisites() {
   fi;
 
 
-	# Ask user for prerequisite installation
-printf -- "\n\n Installation requires GO:1.10.1 as Prequisite\n";
+# Ask user for prerequisite installation
+printf -- "\n\n As part of the installation , Go 1.10.1 will be installed,\n";
 while true; do
-    read -p "Do you wish to continue installing GO 1.10.1?" yn
+    read -p "Do you want to continue ?: " yn
     case $yn in
         [Yy]* ) printf -- 'Selected Yes for prerequisite installation \n\n' | tee -a "$LOG_FILE"; break;;
         [Nn]* ) exit;;
@@ -56,10 +56,6 @@ function cleanup() {
 
 function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n'
-
-	if [[ "${OVERRIDE}" == "true" ]]; then
-		printf -- 'cAdvisor exists on the system. Override flag is set to true hence updating the same\n ' | tee -a "$LOG_FILE"
-	fi
 
 	    # Install go
 		printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
@@ -149,26 +145,17 @@ function printHelp() {
 	echo
 }
 
-while getopts "h?sdopv:" opt; do
+while getopts "h?dpv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
 		exit 0
-		;;
-	s)
-		stty -echo
-		trap error_handle INT
-		trap error_handle TERM
-		trap error_handle EXIT
 		;;
 	d)
 		set -x
 		;;
 	v)
 		PACKAGE_VERSION="$OPTARG"
-		;;
-	o)
-		OVERRIDE=true
 		;;
 	p)
 		checkPrequisites
@@ -179,7 +166,7 @@ done
 function printSummary() {
 	printf 'Execute command : '
 	# tips
-	printf -- "\n\nTips: \n"
+	printf -- "\n\nUsage: \n"
 	printf -- "\nRunning Cadvisor: \n"
 	printf -- "\n cadvisor  \n"
 	printf -- "\n\nAccess cAdvisor web user interface from browser \n"
