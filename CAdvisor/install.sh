@@ -26,7 +26,7 @@ else
 fi
 
 function checkPrequisites() {
-	if ( [[ "$(command -v sudo)" ]] )
+	if  command -v "sudo" > /dev/null ;
         then
             printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
         else
@@ -38,7 +38,7 @@ function checkPrequisites() {
 	# Ask user for prerequisite installation
 	printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
 	while true; do
-    	read -p "Do you want to continue (y/n) ? :  " yn
+    	read -r -p "Do you want to continue (y/n) ? :  " yn
     	case $yn in
       	 	[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
 				break;;
@@ -49,8 +49,8 @@ function checkPrequisites() {
 }
 
 function cleanup() {
-	rm -rf ${GOPATH}/src/github.com/google/cadvisor
-	rm -rf ${CURDIR}/crc32.go
+	rm -rf "${GOPATH}/src/github.com/google/cadvisor"
+	rm -rf "${CURDIR}/crc32.go"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -69,25 +69,25 @@ function configureAndInstall() {
 			printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
 			
         	#Check if go directory exists
-        	 if [ ! -d $HOME/go ]; then
-               mkdir $HOME/go
+        	 if [ ! -d "$HOME/go" ]; then
+               mkdir "$HOME/go"
          	fi
 
         	export GOPATH="${GO_DEFAULT}"
 			export PATH=$PATH:$GOPATH/bin
 		else
-			printf -- "GOPATH already set : Value : $GOPATH \n" >> "$LOG_FILE"
+			printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >> "$LOG_FILE"
 		fi
 		
 			printenv >> "$LOG_FILE"
 		
 			#  Install godep tool
-			cd $GOPATH
+			cd "$GOPATH"
 			go get github.com/tools/godep
 			printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
 
 			# Checkout the code from repository
-			mkdir -p ${GOPATH}/src/github.com/google
+			mkdir -p "${GOPATH}/src/github.com/google"
 			cd "${GOPATH}/src/github.com/google"
 			printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
 			git clone https://github.com/google/cadvisor.git  >> "$LOG_FILE"
@@ -100,7 +100,7 @@ function configureAndInstall() {
 			wget -q $REPO_URL/crc32.go
 
 			# Replace the crc32.go file
-			cp crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
+			cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
 
 			# Build cAdvisor
 			cd "${GOPATH}/src/github.com/google/cadvisor"
@@ -114,7 +114,7 @@ function configureAndInstall() {
 			cleanup
 
 			#Verify cadvisor installation		
-	    	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then		
+	    	if  command -v "$PACKAGE_NAME" > /dev/null ; then		
          		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
          	else
 				printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
@@ -124,8 +124,11 @@ function configureAndInstall() {
 
 function logDetails() {
 	printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
-	cat "/etc/os-release" >>"$LOG_FILE"
-	cat /proc/version >>"$LOG_FILE"
+	 if [ -f "/etc/os-release" ]; then
+	    cat "/etc/os-release" >> "$LOG_FILE"
+    fi
+    
+    cat /proc/version >> "$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
 
 	printf -- "Detected %s \n" "$PRETTY_NAME"
@@ -157,12 +160,12 @@ while getopts "h?dv:" opt; do
 done
 
 function printSummary() {
-	printf 'Execute command : '
-	printf -- "\n\nUsage: \n"
-	printf -- "Running Cadvisor: "
-	printf -- " cadvisor  \n"
-	printf -- "\nAccess cAdvisor web user interface from browser : "
-	printf -- "http://<host-ip>:8080/ \n"
+	printf -- "\n\nGetting Started: \n"
+	printf -- "To run Cadvisor , run the following command : "
+	printf -- "    cadvisor &   (Run in background)  \n"
+	printf -- "    cadvisor -logtostderr  (Foreground with console logs)  \n\n"
+	printf -- "\nAccess cAdvisor UI using the below link : "
+	printf -- "http://<host-ip>:<port>/    [Default port = 8080] \n"
 	printf -- '\n'
 }
 
@@ -176,19 +179,19 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get update
-	sudo apt-get install -y wget git libseccomp-dev curl >> "$LOG_FILE"
+	sudo apt-get install -qq wget git libseccomp-dev curl  | tee -a "$LOG_FILE"
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo yum install -y wget git libseccomp-devel >> "$LOG_FILE"
+	sudo yum install -y -q wget git libseccomp-devel  | tee -a "$LOG_FILE"
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y git libseccomp-devel wget tar curl gcc >> "$LOG_FILE"
+	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc | tee -a "$LOG_FILE"
 	configureAndInstall
 	;;
 
