@@ -24,7 +24,7 @@ function checkPrequisites()
 {
   if ( [[ "$(command -v sudo)" ]] )
         then
-                 printf -- 'Sudo : Yes\n';
+                 printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
         else
                  printf -- 'Sudo : No \n';
                  printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
@@ -34,12 +34,12 @@ function checkPrequisites()
 
   if ( [[ "$(command -v go)" ]] )
   then
-    printf -- "Go : Yes" | tee -a  "$LOG_FILE"
+    printf -- "Go : Yes" >> "$LOG_FILE"
 
    # Ask user for prerequisite installation
   printf -- "\n\n As part of the installation , Go 1.10.1 will be installed, \n";
     while true; do
-      read -r "Do you want to continue ?: " yn
+      read -p "Do you want to continue ?: " yn
       case $yn in
         [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
 				break;;
