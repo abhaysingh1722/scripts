@@ -34,18 +34,17 @@ function checkPrequisites() {
   fi;
 
 
-	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then
-		printf -- "%s : Yes" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
+	# Ask user for prerequisite installation
+printf -- "\n\n Installation requires GO:1.10.1 as Prequisite\n";
+while true; do
+    read -p "\n\n Do you wish to continue installing GO 1.10.1?" yn
+    case $yn in
+        [Yy]* ) printf -- 'Selected Yes for prerequisite installation \n\n' | tee -a "$LOG_FILE"; break;;
+        [Nn]* ) exit;;
+        * ) echo "Please answer yes or no.";;
+    esac
+done
 
-			if [[ $OVERRIDE ]]; then
-				printf -- 'Override (-o) flag is set \n' | tee -a "$LOG_FILE"
-				exit 0
-			fi
-
-	 else
-   printf -- 'Go : No \nPrequisites satisfied \n\n'
-
-  fi;
 }
 
 function cleanup() {
