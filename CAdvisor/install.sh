@@ -10,7 +10,7 @@ CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
 GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh"
 REPO_URL="https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files"
-
+FORCE="false"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap cleanup 0 1 2 ERR
@@ -27,25 +27,30 @@ fi
 
 function prepare() {
 	if  command -v "sudo" > /dev/null ;
-        then
-            printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
-        else
-            printf -- 'Sudo : No \n' >> "$LOG_FILE"
-            printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
-    		exit 1;
+    then
+        printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
+    else
+        printf -- 'Sudo : No \n' >> "$LOG_FILE"
+        printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+    	exit 1;
   	fi;
 
-	# Ask user for prerequisite installation
-	printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
-	while true; do
-    	read -r -p "Do you want to continue (y/n) ? :  " yn
-    	case $yn in
-      	 	[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
-				break;;
-        	[Nn]* ) exit;;
-        	* ) 	echo "Please provide confirmation to proceed.";;
-   		 esac
-	done
+	if [[ "$FORCE" == "true" ]] ;
+	then
+		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+	else
+		# Ask user for prerequisite installation
+		printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
+		while true; do
+    		read -r -p "Do you want to continue (y/n) ? :  " yn
+    		case $yn in
+      	 		[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+					break;;
+        		[Nn]* ) exit;;
+        		* ) 	echo "Please provide confirmation to proceed.";;
+   		 	esac
+		done
+	fi	
 }
 
 function cleanup() {
@@ -59,9 +64,10 @@ function configureAndInstall() {
 
 	# Install go
 	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-       curl $GO_INSTALL_URL | bash
+    curl $GO_INSTALL_URL | bash
+
 	# Install cAdvisor
-	printf -- 'Installing cAdvisor..... \n'
+	printf -- '\nInstalling cAdvisor..... \n'
        
 	# Set GOPATH if not already set
 	if [[ -z "${GOPATH}" ]]; then
@@ -88,7 +94,7 @@ function configureAndInstall() {
 	mkdir -p "${GOPATH}/src/github.com/google"
 	cd "${GOPATH}/src/github.com/google"
 	printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
-	git clone -b "v${PACKAGE_VERSION}" https://github.com/google/cadvisor.git > /dev/null
+	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git
 	printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
     
 	cd "${CURDIR}"
@@ -136,12 +142,12 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-p check-prequisite]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
 
-while getopts "h?dv:" opt; do
+while getopts "h?dyv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -153,16 +159,20 @@ while getopts "h?dv:" opt; do
 	v)
 		PACKAGE_VERSION="$OPTARG"
 		;;
+	y)
+		FORCE="true"
 	esac
 done
 
 function printSummary() {
-	printf -- "\n\nGetting Started: \n"
-	printf -- "To run Cadvisor , run the following command : "
+	printf -- '\n***************************************************************************************\n'
+	printf -- "Getting Started: \n"
+	printf -- "To run Cadvisor , run the following command : \n"
 	printf -- "    cadvisor &   (Run in background)  \n"
 	printf -- "    cadvisor -logtostderr  (Foreground with console logs)  \n\n"
 	printf -- "\nAccess cAdvisor UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 8080] \n"
+	printf -- '***************************************************************************************\n'
 	printf -- '\n'
 }
 
@@ -176,19 +186,18 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get update
-	sudo apt-get install -qq wget git libseccomp-dev curl  | tee -a "$LOG_FILE"
-	configureAndInstall
+	sudo apt-get install -qq wget git libseccomp-dev curl  > /dev/null
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo yum install -y -q wget git libseccomp-devel  | tee -a "$LOG_FILE"
+	sudo yum install -y -q wget git libseccomp-devel > /dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc | tee -a "$LOG_FILE"
+	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc > /dev/null
 	configureAndInstall
 	;;
 
