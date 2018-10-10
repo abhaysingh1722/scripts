@@ -28,9 +28,9 @@ fi
 function checkPrequisites() {
  if ( [[ "$(command -v sudo)" ]] )
         then
-                 printf -- 'Sudo : Yes\n';
+                 printf -- 'Sudo : Yes\n' >> "$LOGFILE"
         else
-                 printf -- 'Sudo : No \n';
+                 printf -- 'Sudo : No \n' >> "$LOGFILE"
                  printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
@@ -89,14 +89,15 @@ function configureAndInstall() {
 			# Checkout the code from repository
 			mkdir -p ${GOPATH}/src/github.com/google
 			cd "${GOPATH}/src/github.com/google"
-			git clone https://github.com/google/cadvisor.git
+			printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
+			git clone https://github.com/google/cadvisor.git  >> "$LOG_FILE"
 			cd cadvisor
-			git checkout "v${PACKAGE_VERSION}"
+			git checkout "v${PACKAGE_VERSION}"  >> "$LOG_FILE"
 			printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
 
         	cd "${CURDIR}"
 			# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-			wget $REPO_URL/crc32.go
+			wget -q $REPO_URL/crc32.go
 
 			# Replace the crc32.go file
 			cp crc32.go ${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/
@@ -112,7 +113,7 @@ function configureAndInstall() {
 			#Verify cadvisor installation
 		
 	    	if ( [[ "$(command -v $PACKAGE_NAME)" ]]); then		
-         		printf -- " %s Installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+         		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
          	else
 				printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
 				exit 127;
@@ -156,9 +157,9 @@ done
 function printSummary() {
 	printf 'Execute command : '
 	printf -- "\n\nUsage: \n"
-	printf -- "Running Cadvisor: \n"
+	printf -- "Running Cadvisor: "
 	printf -- " cadvisor  \n"
-	printf -- "\nAccess cAdvisor web user interface from browser \n"
+	printf -- "\nAccess cAdvisor web user interface from browser : "
 	printf -- "http://<host-ip>:8080/ \n"
 	printf -- '\n'
 }
@@ -173,19 +174,19 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get update
-	sudo apt-get install -y wget git libseccomp-dev curl
+	sudo apt-get install -y wget git libseccomp-dev curl >> "$LOGFILE"
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo yum install -y wget git libseccomp-devel
+	sudo yum install -y wget git libseccomp-devel >> "$LOGFILE"
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y git libseccomp-devel wget tar curl gcc
+	sudo zypper install -y git libseccomp-devel wget tar curl gcc >> "$LOGFILE"
 	configureAndInstall
 	;;
 
