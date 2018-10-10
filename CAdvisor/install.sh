@@ -145,7 +145,7 @@ function printHelp() {
 	echo
 }
 
-while getopts "h?dpv:" opt; do
+while getopts "h?dv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -156,9 +156,6 @@ while getopts "h?dpv:" opt; do
 		;;
 	v)
 		PACKAGE_VERSION="$OPTARG"
-		;;
-	p)
-		checkPrequisites
 		;;
 	esac
 done
