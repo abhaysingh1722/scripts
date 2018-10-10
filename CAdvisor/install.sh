@@ -25,7 +25,7 @@ else
   export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
 fi
 
-function checkPrequisites() {
+function prepare() {
 	if  command -v "sudo" > /dev/null ;
         then
             printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
@@ -57,69 +57,66 @@ function cleanup() {
 function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n'
 
-	    # Install go
-		printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-        curl $GO_INSTALL_URL | bash
+	# Install go
+	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
+       curl $GO_INSTALL_URL | bash
+	# Install cAdvisor
+	printf -- 'Installing cAdvisor..... \n'
+       
+	# Set GOPATH if not already set
+	if [[ -z "${GOPATH}" ]]; then
+		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
+		
+       	#Check if go directory exists
+       	if [ ! -d "$HOME/go" ]; then
+              mkdir "$HOME/go"
+        fi
+       	export GOPATH="${GO_DEFAULT}"
+		export PATH=$PATH:$GOPATH/bin
+	else
+		printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >> "$LOG_FILE"
+	fi
+		
+	printenv >> "$LOG_FILE"
+	
+	#  Install godep tool
+	cd "$GOPATH"
+	go get github.com/tools/godep
+	printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
 
-		# Install cAdvisor
-		printf -- 'Installing cAdvisor..... \n'
-        
-		# Set GOPATH if not already set
-		if [[ -z "${GOPATH}" ]]; then
-			printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
-			
-        	#Check if go directory exists
-        	 if [ ! -d "$HOME/go" ]; then
-               mkdir "$HOME/go"
-         	fi
-
-        	export GOPATH="${GO_DEFAULT}"
-			export PATH=$PATH:$GOPATH/bin
-		else
-			printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >> "$LOG_FILE"
-		fi
-		
-		printenv >> "$LOG_FILE"
-		
-		#  Install godep tool
-		cd "$GOPATH"
-		go get github.com/tools/godep
-		printf -- 'Installed godep tool at GOPATH \n' >> "$LOG_FILE"
-
-		# Checkout the code from repository
-		mkdir -p "${GOPATH}/src/github.com/google"
-		cd "${GOPATH}/src/github.com/google"
-
-		printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
-		git clone -b "v${PACKAGE_VERSION}" https://github.com/google/cadvisor.git  >> "$LOG_FILE"
-		cd cadvisor
-		printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
-
-        cd "${CURDIR}"
-		# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-		wget -q $REPO_URL/crc32.go
-		
-		# Replace the crc32.go file
-		cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
-		
-		# Build cAdvisor
-		cd "${GOPATH}/src/github.com/google/cadvisor"
-		godep go build .
-		
-		# Add cadvisor to /usr/bin
-		cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
-		printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
-		
-		#Cleanup
-		cleanup
-		
-		#Verify cadvisor installation		
-	    if  command -v "$PACKAGE_NAME" > /dev/null ; then		
-        		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-        else
-			printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
-			exit 127;
-		fi
+	# Checkout the code from repository
+	mkdir -p "${GOPATH}/src/github.com/google"
+	cd "${GOPATH}/src/github.com/google"
+	printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
+	git clone -b "v${PACKAGE_VERSION}" https://github.com/google/cadvisor.git > /dev/null
+	printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
+    
+	cd "${CURDIR}"
+	
+	# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
+	wget -q $REPO_URL/crc32.go
+	
+	# Replace the crc32.go file
+	cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
+	
+	# Build cAdvisor
+	cd "${GOPATH}/src/github.com/google/cadvisor"
+	godep go build .
+	
+	# Add cadvisor to /usr/bin
+	cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor"  /usr/bin/
+	printf -- 'Build cAdvisor successfully \n' >> "$LOG_FILE"
+	
+	#Cleanup
+	cleanup
+	
+	#Verify cadvisor installation		
+	if  command -v "$PACKAGE_NAME" > /dev/null ; then		
+    	printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+    else
+		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
+		exit 127;
+	fi
 }
 
 function logDetails() {
@@ -172,7 +169,7 @@ function printSummary() {
 ###############################################################################################################
 
 logDetails
-checkPrequisites #Check Prequisites
+prepare #Check Prequisites
 
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
