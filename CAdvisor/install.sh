@@ -39,7 +39,7 @@ function checkPrequisites() {
 # Ask user for prerequisite installation
 printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
 while true; do
-    read -p "Do you want to continue ?: " yn
+    read -p "Do you want to continue (y/n) ? :  " yn
     case $yn in
         [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
 				break;;
