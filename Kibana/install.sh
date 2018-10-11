@@ -16,82 +16,77 @@ trap "" 1 2 ERR
 if [ -f "/etc/os-release" ]; then
 	source "/etc/os-release"
 else
-  cat /etc/redhat-release >> "${LOG_FILE}"
+	cat /etc/redhat-release >>"${LOG_FILE}"
 	export ID="rhel"
-  export VERSION_ID="6.x"
-  export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
+	export VERSION_ID="6.x"
+	export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
 fi
 
-function checkPrequisites()
-{
-  if command -v "sudo" > /dev/null ;
-  then
-    printf -- 'Sudo : Yes\n';
-  else
-    printf -- 'Sudo : No \n';
-    printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
-    exit 1;
-  fi;
+function checkPrequisites() {
+	if command -v "sudo" >/dev/null; then
+		printf -- 'Sudo : Yes\n'
+	else
+		printf -- 'Sudo : No \n'
+		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
+		exit 1
+	fi
 }
 
-function cleanup()
-{
-  rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-  rm -rf "${WORKDIR}/nodejs"
-  rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz" 
-  printf -- 'Cleaned up the artifacts\n'  >> "${LOG_FILE}"
+function cleanup() {
+	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
+	rm -rf "${WORKDIR}/nodejs"
+	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
+	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
-function configureAndInstall()
-{
-  #cleanup
-  printf -- 'Configuration and Installation started \n'
+function configureAndInstall() {
+	#cleanup
+	printf -- 'Configuration and Installation started \n'
 
-  # Install Nodejs
-  printf -- 'Downloading nodejs binaries \n'
-  cd "${WORKDIR}"
-  wget https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
-  tar xvf node-v8.11.4-linux-s390x.tar.gz
-  mv node-v8.11.4-linux-s390x nodejs
-  export PATH=$PATH:$PWD/nodejs/bin
-  node -v
-  
+	# Install Nodejs
+	printf -- 'Downloading nodejs binaries \n'
+	cd "${WORKDIR}"
+	wget https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
+	tar xvf node-v8.11.4-linux-s390x.tar.gz
+	mv node-v8.11.4-linux-s390x nodejs
+	export PATH=$PATH:$PWD/nodejs/bin
+	node -v
 
-  #Install Kibana
-  printf -- '\nInstalling Kibana..... \n'
-  printf -- '\nGet Kibana release package and extract\n'
-  cd "${WORKDIR}"
-  wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz
-  tar xvf kibana-6.4.2-linux-x86_64.tar.gz
+	#Install Kibana
+	printf -- '\nInstalling Kibana..... \n'
+	printf -- '\nGet Kibana release package and extract\n'
+	cd "${WORKDIR}"
+	wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz
+	tar xvf kibana-6.4.2-linux-x86_64.tar.gz
 
-  printf -- '\nReplace Node.js in the package with the installed Node.js.\n'
-  cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-  mv node node_old         # rename the node
-  ln -s "${WORKDIR}"/nodejs node
+	printf -- '\nReplace Node.js in the package with the installed Node.js.\n'
+	cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
+	mv node node_old # rename the node
+	ln -s "${WORKDIR}"/nodejs node
 
-# Add kibana to /usr/bin
-	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana"  /usr/bin/
-	printf -- 'Installed kibana successfully \n' >> "${LOG_FILE}"
-	
-	#Cleanup  
-  	cleanup
-	
-	#Verify kibana installation		
-	if  command -v "$PACKAGE_NAME" > /dev/null ; then		
-    	printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-    else
-		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
-		exit 127;
+	# Add kibana to /usr/bin
+	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
+	printf -- 'Installed kibana successfully \n' >>"${LOG_FILE}"
+
+	#Cleanup
+	cleanup
+
+	#Verify kibana installation
+	if command -v "$PACKAGE_NAME" >/dev/null; then
+		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+	else
+		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
+		exit 127
 	fi
 }
 
 function logDetails() {
 	printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
 	if [ -f "/etc/os-release" ]; then
-	    cat "/etc/os-release" >> "$LOG_FILE"
-    fi
-    
-    cat /proc/version >> "$LOG_FILE"
+		cat "/etc/os-release" >>"$LOG_FILE"
+	fi
+
+	cat /proc/version >>"$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
 
 	printf -- "Detected %s \n" "$PRETTY_NAME"
@@ -121,6 +116,7 @@ while getopts "h?dyv:" opt; do
 		;;
 	y)
 		FORCE="true"
+		;;
 	esac
 done
 
@@ -146,19 +142,19 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
 	sudo apt-get update
-	sudo apt-get install wget tar  > /dev/null
+	sudo apt-get install wget tar >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo yum install wget tar > /dev/null
+	sudo yum install wget tar >/dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo zypper install wget tar  > /dev/null
+	sudo zypper install wget tar >/dev/null
 	configureAndInstall
 	;;
 
@@ -169,3 +165,4 @@ case "$DISTRO" in
 esac
 
 printSummary
+
