@@ -44,7 +44,7 @@ function cleanup()
 
 function configureAndInstall()
 {
-  cleanup
+  #cleanup
   printf -- 'Configuration and Installation started \n'
 
   # Install Nodejs
@@ -77,7 +77,7 @@ function configureAndInstall()
 	printf -- 'Installed kibana successfully \n' >> "${LOG_FILE}"
 	
 	#Cleanup  
-  cleanup
+  	cleanup
 	
 	#Verify kibana installation		
 	if  command -v "$PACKAGE_NAME" > /dev/null ; then		
