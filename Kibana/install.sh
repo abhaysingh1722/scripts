@@ -51,14 +51,11 @@ function configureAndInstall()
   printf -- 'Downloading nodejs binaries \n'
   cd "${WORKDIR}"
   wget https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
-
-  #sudo rm -rf /usr/local/go
   tar xvf node-v8.11.4-linux-s390x.tar.gz
   mv node-v8.11.4-linux-s390x nodejs
   export PATH=$PATH:$PWD/nodejs/bin
   node -v
-  #ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
-  #printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
+  
 
   #Install Kibana
   printf -- '\nInstalling Kibana..... \n'
