@@ -124,8 +124,7 @@ function printSummary() {
 	printf -- '\n***************************************************************************************\n'
 	printf -- "Start Kibana: \n"
 	printf -- "Now Kibana is ready to execute, make sure an Elasticsearch instance is running, and update the Kibana configuration file config/kibana.yml to set elasticsearch.url to the Elasticsearch host. \n"
-	printf -- "    cd ${WORKDIR}/kibana-6.4.2-linux-x86_64  \n"
-	printf -- "    bin/kibana  & (Run in background) \n"
+	printf -- "    kibana  & (Run in background) \n"
 	printf -- "\nAccess kibana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 5601] \n"
 	printf -- '***************************************************************************************\n'
@@ -165,4 +164,3 @@ case "$DISTRO" in
 esac
 
 printSummary
-
