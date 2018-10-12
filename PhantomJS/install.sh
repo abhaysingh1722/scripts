@@ -34,22 +34,23 @@ function checkPrequisites() {
 		exit 1
 	fi
 
-  if [[ "$FORCE" == "true" ]] ;
-    then
-      printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
-    else
-      # Ask user for prerequisite installation
-      printf -- "\n\nAs part of the installation , some package dependencies will be installed, \n";
-      while true; do
-          read -r -p "Do you want to continue (y/n) ? :  " yn
-          case $yn in
-              [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
-            break;;
-              [Nn]* ) exit;;
-              * ) 	echo "Please provide confirmation to proceed.";;
-          esac
-      done
-    fi	
+	if [[ "$FORCE" == "true" ]]; then
+		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+	else
+		# Ask user for prerequisite installation
+		printf -- "\n\nAs part of the installation , some package dependencies will be installed, \n"
+		while true; do
+			read -r -p "Do you want to continue (y/n) ? :  " yn
+			case $yn in
+			[Yy]*)
+				printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"
+				break
+				;;
+			[Nn]*) exit ;;
+			*) echo "Please provide confirmation to proceed." ;;
+			esac
+		done
+	fi
 
 }
 
@@ -98,14 +99,13 @@ function configureAndInstall() {
 
 	# Install Phantomjs
 	cd "$BUILD_DIR"
-  git clone -q -b "${PACKAGE_VERSION}" git://github.com/ariya/phantomjs.git
+	git clone -q -b "${PACKAGE_VERSION}" git://github.com/ariya/phantomjs.git
 	cd phantomjs
 	git submodule init
 	git submodule update
 	printf -- 'Clone Phantomjs repo success\n' >>"$LOG_FILE"
 	# Download  JSStringRef.h
-	if [[ "${VERSION_ID}" == "15" ]]; 
-  then
+	if [[ "${VERSION_ID}" == "15" ]]; then
 		# get config file
 		wget -q $CONF_URL/JSStringRef.h
 		# replace config file
@@ -121,7 +121,7 @@ function configureAndInstall() {
 	cp "${BUILD_DIR}/phantomjs/bin/phantomjs" /usr/bin/
 	printf -- 'Add Phantomjs to /usr/bin success \n' >>"$LOG_FILE"
 
-	#Clean up 
+	#Clean up
 	cleanup
 
 	#Verify if phantomjs is configured correctly
@@ -186,7 +186,7 @@ function printSummary() {
 
 ###############################################################################################################
 function verify_repo_install() {
-  #Verify if package is configured correctly
+	#Verify if package is configured correctly
 	if command -v "$PACKAGE_NAME" >/dev/null; then
 		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 	else
@@ -194,7 +194,6 @@ function verify_repo_install() {
 		exit 127
 	fi
 }
-
 
 logDetails
 checkPrequisites #Check Prequisites
@@ -222,10 +221,10 @@ case "$DISTRO" in
 	printf -- 'Installing the dependencies for PhantomJS from repository \n' | tee -a "$LOG_FILE"
 
 	if [[ "${VERSION_ID}" == "12.3" ]]; then
-		sudo zypper -q install -y  gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
+		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
 		printf -- 'Install dependencies for sles-12.3 success \n' >>"$LOG_FILE"
 	else
-		sudo zypper -q install -y  gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool >/dev/null
+		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool >/dev/null
 		printf -- 'Install dependencies for sles-15 success \n' >>"$LOG_FILE"
 	fi
 
