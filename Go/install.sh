@@ -24,38 +24,25 @@ fi
 
 function checkPrequisites()
 {
-  if ( [[ "$(command -v sudo)" ]] )
-        then
-                 printf -- 'Sudo : Yes\n';
-        else
-                 printf -- 'Sudo : No \n';
-                 printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
+  if command -v "sudo" > /dev/null ;
+  then
+    printf -- 'Sudo : Yes\n';
+  else
+    printf -- 'Sudo : No \n';
+    printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
 
-
-  if ( [[ "$(command -v go)" ]] )
+  if command -v "go" > /dev/null ;
   then
-    printf -- "Go : Yes" | tee -a  "$LOG_FILE"
+    printf -- "Go : Yes" >>  "$LOG_FILE"
 
     if go version | grep -q "$PACKAGE_VERSION" 
     then
       printf -- "Version : %s (Satisfied) \n" "${PACKAGE_VERSION}" | tee -a  "$LOG_FILE"
       printf -- "No update required for Go \n" | tee -a  "$LOG_FILE"
-      exit 1;
-    else
-      printf -- "Version : Outdated \n" | tee -a  "$LOG_FILE"
-      if [[ $OVERRIDE ]]
-      then
-        printf -- 'Override Packages : Yes \n' | tee -a  "$LOG_FILE"
-        exit 0;
-      fi
-      exit 1
+      exit 0;
     fi
-
-    else
-   printf -- 'Go : No \nPrequisites satisfied \n\n'
-
   fi;
 }
 
@@ -87,7 +74,7 @@ function configureAndInstall()
 
   if [[ "${ID}" != "ubuntu" ]]
   then
-    sudo ln -sf /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  >> "$LOG_FILE"
+    sudo ln -sf /usr/bin/gcc /usr/bin/s390x-linux-gnu-gcc  > /dev/null
     printf -- 'Symlink done for gcc \n'  >> "$LOG_FILE"
   fi
 
@@ -174,11 +161,11 @@ case "$DISTRO" in
   then
     printf -- 'Detected 18.04 version hence installing from repository \n' | tee -a "$LOG_FILE"
     printf -- 'Installing golang from repository' | tee -a "$LOG_FILE"
-    sudo apt-get install -y golang | tee -a "$LOG_FILE"
+    sudo apt-get install -y -qq golang > /dev/null
  
  else
     printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
-    sudo apt-get install -y wget tar gcc > /dev/null
+    sudo apt-get install -y -qq wget tar gcc > /dev/null
     configureAndInstall 
   fi
   ;;
@@ -186,14 +173,14 @@ case "$DISTRO" in
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5" | "rhel-6.x")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
-  sudo yum install -y tar wget gcc  >> "$LOG_FILE"
+  sudo yum install -y -q tar wget gcc  > /dev/null
   configureAndInstall
   ;;
 
 "sles-12.3" | "sles-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
-  sudo zypper install -y tar wget gcc
+  sudo zypper install -y -q tar wget gcc > /dev/null
   configureAndInstall
   ;;
 
