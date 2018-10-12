@@ -1,0 +1,25 @@
+**************************** SYSTEM DETAILS *************************************************************
+NAME="Ubuntu"
+VERSION="18.04.1 LTS (Bionic Beaver)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 18.04.1 LTS"
+VERSION_ID="18.04"
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+VERSION_CODENAME=bionic
+UBUNTU_CODENAME=bionic
+Linux version 4.4.0-137-generic (buildd@bos02-s390x-010) (gcc version 5.4.0 20160609 (Ubuntu 5.4.0-6ubuntu1~16.04.10) ) #163-Ubuntu SMP Mon Sep 24 13:14:17 UTC 2018
+*********************************************************************************************************
+Request details : PACKAGE NAME= etcd , VERSION= 3.3.8
+ Selected Yes for prerequisite installation. The installation will proceed.
+
+Installing etcd 3.3.8 for ubuntu-18.04
+Setting default value for GOPATH
+Setting default value for ETCD
+Cloned the etcd code
+Build etcd successfully
+ etcd Installation verified... continue with etcd installation...
+Cleaned up the artifacts
