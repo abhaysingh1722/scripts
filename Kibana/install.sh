@@ -6,8 +6,9 @@ set -e
 
 PACKAGE_NAME="kibana"
 PACKAGE_VERSION="6.4.2"
-#OVERRIDE=false
+FORCE=false
 WORKDIR="$(pwd)"
+#ELASTICSEARCH_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Elasticsearch/install.sh"
 LOG_FILE="${WORKDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap "" 1 2 ERR
@@ -30,6 +31,23 @@ function checkPrequisites() {
 		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
+
+	if [[ "$FORCE" == "true" ]] ;
+	then
+		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "${LOG_FILE}"
+	else
+		# Ask user for prerequisite installation
+		printf -- "\n\nAs part of the installation ,Elasticsearch and Node.js will be installed, \n";
+		while true; do
+    		read -r -p "Do you want to continue (y/n) ? :  " yn
+    		case $yn in
+      	 		[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "${LOG_FILE}"; 
+					break;;
+        		[Nn]* ) exit;;
+        		* ) 	echo "Please provide confirmation to proceed.";;
+   		 	esac
+		done
+	fi	
 }
 
 function cleanup() {
@@ -42,6 +60,10 @@ function cleanup() {
 function configureAndInstall() {
 	#cleanup
 	printf -- 'Configuration and Installation started \n'
+
+	# Install Elasticsearch
+	#printf -- "Installing Elasticsearch... \n" | tee -a "${LOG_FILE}"
+    #curl "${ELASTICSEARCH_INSTALL_URL}" | bash
 
 	# Install Nodejs
 	printf -- 'Downloading nodejs binaries \n'
