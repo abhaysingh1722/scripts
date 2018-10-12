@@ -153,7 +153,7 @@ function startService() {
 	cleanup
 
 	#Verify elasticsearch installation
-	if command -v "$PACKAGE_NAME" >/dev/null; then
+	if command -V "$PACKAGE_NAME" >/dev/null; then
 		printf -- "%s installation completed.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 	else
 		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
