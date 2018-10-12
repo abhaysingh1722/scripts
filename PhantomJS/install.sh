@@ -222,10 +222,10 @@ case "$DISTRO" in
 	printf -- 'Installing the dependencies for PhantomJS from repository \n' | tee -a "$LOG_FILE"
 
 	if [[ "${VERSION_ID}" == "12.3" ]]; then
-		sudo zypper install -y -q gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
+		sudo zypper -q install -y  gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
 		printf -- 'Install dependencies for sles-12.3 success \n' >>"$LOG_FILE"
 	else
-		sudo zypper install -y -q gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool >/dev/null
+		sudo zypper -q install -y  gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool >/dev/null
 		printf -- 'Install dependencies for sles-15 success \n' >>"$LOG_FILE"
 	fi
 
