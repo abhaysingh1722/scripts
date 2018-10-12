@@ -7,8 +7,7 @@ set -e
 PACKAGE_NAME="kibana"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
-WORKDIR="$(pwd)"
-#ELASTICSEARCH_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Elasticsearch/install.sh"
+WORKDIR="/usr/local"
 LOG_FILE="${WORKDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap "" 1 2 ERR
@@ -32,29 +31,29 @@ function checkPrequisites() {
 		exit 1
 	fi
 
-	if [[ "$FORCE" == "true" ]] ;
-	then
+	if [[ "$FORCE" == "true" ]]; then
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "${LOG_FILE}"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation ,Elasticsearch and Node.js will be installed, \n";
+		printf -- "\n\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
 		while true; do
-    		read -r -p "Do you want to continue (y/n) ? :  " yn
-    		case $yn in
-      	 		[Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "${LOG_FILE}"; 
-					break;;
-        		[Nn]* ) exit;;
-        		* ) 	echo "Please provide confirmation to proceed.";;
-   		 	esac
+			read -r -p "Do you want to continue (y/n) ? :  " yn
+			case $yn in
+			[Yy]*)
+				printf -- 'User responded with Yes. \n' | tee -a "${LOG_FILE}"
+				break
+				;;
+			[Nn]*) exit ;;
+			*) echo "Please provide confirmation to proceed." ;;
+			esac
 		done
-	fi	
+	fi
 }
 
 function cleanup() {
 	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-	rm -rf "${WORKDIR}/nodejs"
 	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
-	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
+	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"k
 }
 
 function configureAndInstall() {
@@ -63,12 +62,12 @@ function configureAndInstall() {
 
 	# Install Elasticsearch
 	#printf -- "Installing Elasticsearch... \n" | tee -a "${LOG_FILE}"
-    #curl "${ELASTICSEARCH_INSTALL_URL}" | bash
+	#curl "${ELASTICSEARCH_INSTALL_URL}" | bash
 
 	# Install Nodejs
 	printf -- 'Downloading nodejs binaries \n'
 	cd "${WORKDIR}"
-	wget https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
+	wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
 	tar xvf node-v8.11.4-linux-s390x.tar.gz
 	mv node-v8.11.4-linux-s390x nodejs
 	export PATH=$PATH:$PWD/nodejs/bin
@@ -78,13 +77,17 @@ function configureAndInstall() {
 	printf -- '\nInstalling Kibana..... \n'
 	printf -- '\nGet Kibana release package and extract\n'
 	cd "${WORKDIR}"
-	wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz
+	wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz
 	tar xvf kibana-6.4.2-linux-x86_64.tar.gz
 
 	printf -- '\nReplace Node.js in the package with the installed Node.js.\n'
 	cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
 	mv node node_old # rename the node
 	ln -s "${WORKDIR}"/nodejs node
+
+	# Add config/kibana.yml to /etc/kibana/config/
+	sudo mkdir -p /etc/kibana/config/
+	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/config/kibana.yml" /etc/kibana/config/kibana.yml
 
 	# Add kibana to /usr/bin
 	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
@@ -163,19 +166,19 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
 	sudo apt-get update
-	sudo apt-get install wget tar >/dev/null
+	sudo apt-get install -qq wget tar >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo yum install wget tar >/dev/null
+	sudo yum install -y -q wget tar >/dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo zypper install wget tar >/dev/null
+	sudo zypper -q install -y wget tar >/dev/null
 	configureAndInstall
 	;;
 
