@@ -23,34 +23,33 @@
         fi
 
         function prepare() {
-         if  command -v "sudo" > /dev/null ;
-         then
+        if  command -v "sudo" > /dev/null ;
+        then
             printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
         else
             printf -- 'Sudo : No \n' >> "$LOG_FILE"
             printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     	    exit 1;
   	    fi;
+           
+        if command -v "go" > /dev/null
+        then
+            printf -- "Go : Yes \n";
+        else
+            printf -- "Go : No \n";
+            printf -- "This setup includes installation of Go.\n";
+        fi
 
-        
-            if command -v "go" > /dev/null
-            then
-                printf -- "Go : Yes \n";
-            else
-                printf -- "Go : No \n";
-                printf -- "This setup includes installation of Go.\n";
-            fi
+        if command -v $PACKAGE_NAME > /dev/null;
+        then
+            printf -- "%s : Yes \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
+            printf -- "\nYou already have the package installed on ur system.\n"
 
-            if command -v $PACKAGE_NAME > /dev/null;
-            then
-                printf -- "%s : Yes \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
-                printf -- "\nYou already have the package installed on ur system.\n"
+        else
+            printf -- "%s : No \n" "$PACKAGE_NAME" ;
+            printf -- 'Package not present on system \n\n'
 
-            else
-                printf -- "%s : No \n" "$PACKAGE_NAME" ;
-                printf -- 'Package not present on system \n\n'
-
-            fi;
+        fi;
 
         if [[ "$FORCE" == "true" ]] ;
 	    then
@@ -68,7 +67,6 @@
    		 	    esac
 		    done
 	    fi	
-
         }
 
         function cleanup() {
@@ -78,14 +76,12 @@
         }
 
         function configureAndInstall() {
-            printf -- "Configuration and Installation started \n"
+         printf -- "Configuration and Installation started \n"
 
-            #GO Installation
-            printf -- "\n\n Installing Go \n" | tee -a "$LOG_FILE"
-            curl $GO_URL | bash
+         #GO Installation
+         printf -- "\n\n Installing Go \n" | tee -a "$LOG_FILE"
+         curl $GO_URL | bash
         
-            
-            
         # Install etcd
         printf -- 'Installing etcd..... \n'
                 
@@ -123,30 +119,22 @@
         mkdir -p /${GOPATH}/src/github.com/coreos
         cd /${GOPATH}/src/github.com/coreos
         printf -- 'Cloning etcd code \n' >> "$LOG_FILE"
-        git clone -q git://github.com/coreos/etcd
-        cd etcd
-        git checkout "v${PACKAGE_VERSION}"
+        git clone -b "v${PACKAGE_VERSION}" -q git://github.com/coreos/etcd
+        
+        #git checkout "v${PACKAGE_VERSION}"
         printf -- 'Cloned the etcd code \n' >>"$LOG_FILE"
 
-             
-
-
         # Build etcd
-        printf -- "\n******************BUILDING*******************\n"
+        printf -- "\nBuilding etcd\n"
+        cd etcd
         ./build
                 
         # Add etcd to /usr/bin
         cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
         printf -- 'Build etcd successfully \n' >>"$LOG_FILE"
-
-      
-        
-
-        
-        printf -- 'Exported variable ETCD_UNSUPPORTED_ARCH=s390x in bashrc \n' >> "$LOG_FILE"
-        
-        #Cleanup
-		cleanup
+	
+	#Cleanup
+	cleanup
 
         #Verify etcd installation
         if command -v "$PACKAGE_NAME" > /dev/null; then 
@@ -155,8 +143,6 @@
                 printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME";
                 exit 127;
         fi
-
-
         }
 
         function logDetails() {
@@ -202,21 +188,20 @@
         done
 
         function printSummary() {
-           	printf -- '\n***************************************************************************************\n'
-            printf -- "\n\n* Tips * \n"
+            printf -- '\n***************************************************************************************\n'
+            printf -- "\n\n* Getting Started * \n"
             printf -- "\nRunning etcd: \n"
             printf -- " etcd  \n\n"
-	    printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x set", set following\n"
+            printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x, set following\n"
 	    printf -- "export ETCD_UNSUPPORTED_ARCH=s390x \n"
             printf -- "This will bring up etcd listening on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
             printf -- "Next, let's set a single key, and then retrieve it:"
             printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
             printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
             printf -- "You have successfully started etcd and written a key to the store.\n"
-	        printf -- '***************************************************************************************\n'
+	    printf -- '***************************************************************************************\n'
         }
-
-
+        
         logDetails
         prepare #Check Prequisites
 
