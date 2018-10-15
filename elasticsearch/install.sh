@@ -4,7 +4,7 @@
 
 set -e
 
-PACKAGE_NAME="Elasticsearch"
+PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
 REPO_URL="https://raw.githubusercontent.com/prankkelkar/git-demo/master"
@@ -149,9 +149,6 @@ function startService() {
 	# elasticsearch calls this file internally
 	sudo ln -sf /usr/share/elasticsearch/bin/elasticsearch-env /usr/bin/
 
-	#Cleanup
-	cleanup
-
 	#Verify elasticsearch installation
 	if command -V "$PACKAGE_NAME" >/dev/null; then
 		printf -- "%s installation completed.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
@@ -179,8 +176,12 @@ function installClient() {
 		sudo easy_install pip
 	fi
 
-	sudo pip install elasticsearch-curator
-	printf -- "\n Installed Elasticsearch Curator client successfully" | tee -a "$LOG_FILE"
+	sudo -H pip install elasticsearch-curator
+	printf -- "\nInstalled Elasticsearch Curator client successfully" | tee -a "$LOG_FILE"
+
+	#Cleanup
+	cleanup
+
 
 }
 
@@ -248,7 +249,6 @@ case "$DISTRO" in
 	configureAndInstall
 	startService
 	installClient
-	cleanup
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
@@ -258,7 +258,6 @@ case "$DISTRO" in
 	configureAndInstall
 	startService
 	installClient
-	cleanup
 	;;
 
 "sles-12.3" | "sles-12.2")
