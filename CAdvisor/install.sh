@@ -64,7 +64,7 @@ function configureAndInstall() {
 
 	# Install go
 	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-    curl $GO_INSTALL_URL | bash
+    curl -s $GO_INSTALL_URL | bash
 
 	# Install cAdvisor
 	printf -- '\nInstalling cAdvisor..... \n'
@@ -94,7 +94,7 @@ function configureAndInstall() {
 	mkdir -p "${GOPATH}/src/github.com/google"
 	cd "${GOPATH}/src/github.com/google"
 	printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
-	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git
+	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >> "${LOG_FILE}"
 	printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
     
 	cd "${CURDIR}"
@@ -185,8 +185,8 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo apt-get update
-	sudo apt-get install -qq wget git libseccomp-dev curl  > /dev/null
+	sudo apt-get -qq update > /dev/null
+	sudo apt-get -qq install  wget git libseccomp-dev curl  > /dev/null
 	configureAndInstall
 	;;
 
