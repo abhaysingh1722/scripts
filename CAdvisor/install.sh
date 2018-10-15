@@ -186,19 +186,19 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get -qq update > /dev/null
-	sudo apt-get -qq install  wget git libseccomp-dev curl  > /dev/null
+	sudo apt-get -qq install  wget git libseccomp-dev curl patch > /dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo yum install -y -q wget git libseccomp-devel > /dev/null
+	sudo yum install -y -q wget git libseccomp-devel patch> /dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc > /dev/null
+	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc patch > /dev/null
 	configureAndInstall
 	;;
 
