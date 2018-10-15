@@ -114,11 +114,14 @@ function configureAndInstall() {
 
 	#Patch Applied for known errors
 	cd "${CURDIR}"
-	wget -q $REPO_URL/jvm.options
-	wget -q $REPO_URL/elasticsearch.yml
-	printf -- '\nReplacing files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
-	cp jvm.options "${CURDIR}/elasticsearch/distribution/src/config/jvm.options"
-	cp elasticsearch.yml "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml"
+	# patch config file 
+	wget -q $REPO_URL/patch1.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/jvm.options" patch1.diff
+
+	wget -q $REPO_URL/patch1.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml" patch2.diff
+
+	printf -- '\nApplying pat for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
 
 	#Build elasticsearch
 	printf -- '\nBuilding Elasticsearch \n' | tee -a "$LOG_FILE"
