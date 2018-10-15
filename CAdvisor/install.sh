@@ -99,12 +99,10 @@ function configureAndInstall() {
     
 	cd "${CURDIR}"
 	
-	# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-	wget -q $REPO_URL/crc32.go
-	
-	# Replace the crc32.go file
-	cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
-	
+	# patch config file 
+	wget -q $REPO_URL/patch.diff
+	patch "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/crc32.go" patch.diff
+		
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
 	godep go build .
