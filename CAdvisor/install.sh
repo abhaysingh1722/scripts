@@ -8,8 +8,10 @@ PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
-GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh"
-REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/CAdvisor/files"
+
+GO_INSTALL_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Go/install.sh"
+REPO_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/cAdvisor/patch"
+
 FORCE="false"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
