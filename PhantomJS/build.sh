@@ -10,7 +10,7 @@ CURDIR="$(pwd)"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
-CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/files"
+CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
 
 trap "" 1 2 ERR
 
@@ -106,10 +106,10 @@ function configureAndInstall() {
 	printf -- 'Clone Phantomjs repo success\n' >>"$LOG_FILE"
 	# Download  JSStringRef.h
 	if [[ "${VERSION_ID}" == "15" ]]; then
-		# get config file
-		wget -q $CONF_URL/JSStringRef.h
 		# replace config file
-		cp JSStringRef.h "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h"
+		wget -q $CONF_URL/patch.diff
+		# replace config file
+		patch "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h" patch.diff
 		printf -- 'Updated JSStringRef.h for sles-15 \n' >>"$LOG_FILE"
 	fi
 
