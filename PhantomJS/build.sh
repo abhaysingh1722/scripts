@@ -10,7 +10,7 @@ CURDIR="$(pwd)"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
-CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/files"
+CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
 
 trap "" 1 2 ERR
 
@@ -106,10 +106,10 @@ function configureAndInstall() {
 	printf -- 'Clone Phantomjs repo success\n' >>"$LOG_FILE"
 	# Download  JSStringRef.h
 	if [[ "${VERSION_ID}" == "15" ]]; then
-		# get config file
-		wget -q $CONF_URL/JSStringRef.h
+		# Patch config file
+		wget -q $CONF_URL/patch.diff
 		# replace config file
-		cp JSStringRef.h "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h"
+		patch "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h" patch.diff
 		printf -- 'Updated JSStringRef.h for sles-15 \n' >>"$LOG_FILE"
 	fi
 
@@ -202,10 +202,10 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo apt-get update >/dev/null
+	sudo apt-get -qq update >/dev/null
 
 	printf -- 'Installing the PhantomJS from repository \n' | tee -a "$LOG_FILE"
-	sudo sudo apt-get install -y -qq phantomjs >/dev/null
+	sudo sudo apt-get install -y -qq phantomjs  >/dev/null
 	verify_repo_install
 	;;
 
@@ -224,7 +224,7 @@ case "$DISTRO" in
 		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
 		printf -- 'Install dependencies for sles-12.3 success \n' >>"$LOG_FILE"
 	else
-		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool >/dev/null
+		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool patch >/dev/null
 		printf -- 'Install dependencies for sles-15 success \n' >>"$LOG_FILE"
 	fi
 

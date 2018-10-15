@@ -198,7 +198,7 @@ case "$DISTRO" in
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc patch > /dev/null
+	sudo zypper -q install -y  git libseccomp-devel wget tar curl gcc patch > /dev/null
 	configureAndInstall
 	;;
 
