@@ -9,7 +9,7 @@ PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
 GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh"
-REPO_URL="https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files"
+REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/CAdvisor/files"
 FORCE="false"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
