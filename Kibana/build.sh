@@ -22,7 +22,7 @@ else
 	export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
 fi
 
-function checkPrequisites() {
+function prepare() {
 	if command -v "sudo" >/dev/null; then
 		printf -- 'Sudo : Yes\n'
 	else
@@ -53,37 +53,34 @@ function checkPrequisites() {
 function cleanup() {
 	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
 	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
-	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"k
+	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
 function configureAndInstall() {
 	#cleanup
-	printf -- 'Configuration and Installation started \n'
-
-	# Install Elasticsearch
-	#printf -- "Installing Elasticsearch... \n" | tee -a "${LOG_FILE}"
-	#curl "${ELASTICSEARCH_INSTALL_URL}" | bash
+	printf -- 'Configuration and Installation started \n' | tee -a "${LOG_FILE}"
 
 	# Install Nodejs
-	printf -- 'Downloading nodejs binaries \n'
+	printf -- 'Downloading nodejs binaries \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz
-	tar xvf node-v8.11.4-linux-s390x.tar.gz
+
+	wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz | tee -a "${LOG_FILE}"
+	tar xvf node-v8.11.4-linux-s390x.tar.gz >> "${LOG_FILE}"
 	mv node-v8.11.4-linux-s390x nodejs
-	export PATH=$PATH:$PWD/nodejs/bin
-	node -v
+	export PATH=$PWD/nodejs/bin:$PATH
+	node -v  >> "${LOG_FILE}"
 
 	#Install Kibana
-	printf -- '\nInstalling Kibana..... \n'
-	printf -- '\nGet Kibana release package and extract\n'
+	printf -- 'Installing Kibana..... \n' | tee -a "${LOG_FILE}"
+	printf -- 'Get Kibana release package and extract\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz
-	tar xvf kibana-6.4.2-linux-x86_64.tar.gz
+	wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz  >> "${LOG_FILE}"
+	tar xvf kibana-6.4.2-linux-x86_64.tar.gz >> "${LOG_FILE}"
 
-	printf -- '\nReplace Node.js in the package with the installed Node.js.\n'
+	printf -- 'Replace Node.js in the package with the installed Node.js.\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
 	mv node node_old # rename the node
-	ln -s "${WORKDIR}"/nodejs node
+	ln -s "${WORKDIR}"/nodejs node >> "${LOG_FILE}"
 
 	# Add config/kibana.yml to /etc/kibana/config/
 	sudo mkdir -p /etc/kibana/config/
@@ -91,7 +88,7 @@ function configureAndInstall() {
 
 	# Add kibana to /usr/bin
 	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
-	printf -- 'Installed kibana successfully \n' >>"${LOG_FILE}"
+	printf -- 'Installed kibana successfully \n' >> "${LOG_FILE}"
 
 	#Cleanup
 	cleanup
@@ -147,8 +144,9 @@ done
 
 function printSummary() {
 	printf -- '\n***************************************************************************************\n'
+	printf -- "Getting Started: \n"
+	printf -- "Pre-requisite: Make sure Elasticsearch instance is running.\nUpdate the Kibana configuration file /etc/kibana/config/kibana.yml to set elasticsearch.url to the Elasticsearch host. \n"
 	printf -- "Start Kibana: \n"
-	printf -- "Now Kibana is ready to execute, make sure an Elasticsearch instance is running, and update the Kibana configuration file config/kibana.yml to set elasticsearch.url to the Elasticsearch host. \n"
 	printf -- "    kibana  & (Run in background) \n"
 	printf -- "\nAccess kibana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 5601] \n"
@@ -159,7 +157,7 @@ function printSummary() {
 ###############################################################################################################
 
 logDetails
-checkPrequisites
+prepare
 
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
