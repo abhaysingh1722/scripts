@@ -185,23 +185,14 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-<<<<<<< HEAD:CAdvisor/install.sh
-	sudo apt-get update
-	sudo apt-get install -qq wget git libseccomp-dev curl patch > /dev/null
-=======
 	sudo apt-get -qq update > /dev/null
 	sudo apt-get -qq install  wget git libseccomp-dev curl patch > /dev/null
->>>>>>> upstream/master:cAdvisor/build.sh
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-<<<<<<< HEAD:CAdvisor/install.sh
-	sudo yum install -y -q wget git libseccomp-devel patch > /dev/null
-=======
 	sudo yum install -y -q wget git libseccomp-devel patch> /dev/null
->>>>>>> upstream/master:cAdvisor/build.sh
 	configureAndInstall
 	;;
 
