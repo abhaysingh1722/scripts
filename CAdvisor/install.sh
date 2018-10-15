@@ -100,7 +100,8 @@ function configureAndInstall() {
 	cd "${CURDIR}"
 	
 	# patch config file 
-	patch "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/crc32.go" < $REPO_URL/patch.diff
+	wget -q $REPO_URL/patch.diff
+	patch "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/crc32.go" patch.diff
 		
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
