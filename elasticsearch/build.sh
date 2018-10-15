@@ -7,7 +7,7 @@ set -e
 PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
-REPO_URL="https://raw.githubusercontent.com/prankkelkar/git-demo/master"
+REPO_URL="https://github.com/imdurgadas/scripts/tree/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
 LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
@@ -118,10 +118,10 @@ function configureAndInstall() {
 	wget -q $REPO_URL/patch1.diff
 	patch "${CURDIR}/elasticsearch/distribution/src/config/jvm.options" patch1.diff
 
-	wget -q $REPO_URL/patch1.diff
+	wget -q $REPO_URL/patch2.diff
 	patch "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml" patch2.diff
 
-	printf -- '\nApplying pat for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
+	printf -- '\nApplying patch for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
 
 	#Build elasticsearch
 	printf -- '\nBuilding Elasticsearch \n' | tee -a "$LOG_FILE"
