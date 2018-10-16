@@ -7,7 +7,7 @@ set -e
 PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
-REPO_URL="https://github.com/imdurgadas/scripts/tree/master/elasticsearch/patch"
+REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
 LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
@@ -240,7 +240,7 @@ case "$DISTRO" in
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	sudo apt-get update > /dev/null
-	sudo apt-get install -y -qq tar wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
+	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	prepare
 	configureAndInstall
 	startService
@@ -250,7 +250,7 @@ case "$DISTRO" in
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo yum install -y -q unzip curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
+	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	prepare
 	configureAndInstall
 	startService
@@ -260,7 +260,7 @@ case "$DISTRO" in
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo zypper --non-interactive install -q tar wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
+	sudo zypper --non-interactive install -q tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	prepare
 	configureAndInstall
 	startService
