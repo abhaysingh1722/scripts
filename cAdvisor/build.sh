@@ -8,8 +8,10 @@ PACKAGE_NAME="cadvisor"
 PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
-GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/install.sh"
-REPO_URL="https://raw.githubusercontent.com/sid226/scripts/master/CAdvisor/files"
+
+GO_INSTALL_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Go/build.sh"
+REPO_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/cAdvisor/patch"
+
 FORCE="false"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
@@ -64,7 +66,7 @@ function configureAndInstall() {
 
 	# Install go
 	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-    curl $GO_INSTALL_URL | bash
+    curl -s $GO_INSTALL_URL | bash
 
 	# Install cAdvisor
 	printf -- '\nInstalling cAdvisor..... \n'
@@ -94,17 +96,15 @@ function configureAndInstall() {
 	mkdir -p "${GOPATH}/src/github.com/google"
 	cd "${GOPATH}/src/github.com/google"
 	printf -- 'Cloning the cadvisor code \n' >> "$LOG_FILE"
-	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git
+	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >> "${LOG_FILE}"
 	printf -- 'Cloned the cadvisor code \n' >> "$LOG_FILE"
     
 	cd "${CURDIR}"
 	
-	# get config file (NEED TO REPLACE WITH LINK OF ORIGINAL REPO)
-	wget -q $REPO_URL/crc32.go
-	
-	# Replace the crc32.go file
-	cp crc32.go "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/"
-	
+	# patch config file 
+	wget -q $REPO_URL/patch.diff
+	patch "${GOPATH}/src/github.com/google/cadvisor/vendor/github.com/klauspost/crc32/crc32.go" patch.diff
+		
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
 	godep go build .
@@ -185,20 +185,20 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo apt-get update
-	sudo apt-get install -qq wget git libseccomp-dev curl  > /dev/null
+	sudo apt-get -qq update > /dev/null
+	sudo apt-get -qq install  wget git libseccomp-dev curl patch > /dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo yum install -y -q wget git libseccomp-devel > /dev/null
+	sudo yum install -y -q wget git libseccomp-devel patch> /dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	sudo zypper install -y -q git libseccomp-devel wget tar curl gcc > /dev/null
+	sudo zypper -q install -y  git libseccomp-devel wget tar curl gcc patch > /dev/null
 	configureAndInstall
 	;;
 
