@@ -35,6 +35,7 @@ function prepare() {
 		printf -- 'Sudo : Yes\n' >>"$LOG_FILE"
 	else
 		printf -- 'Sudo : No \n' >>"$LOG_FILE"
+		printf -- 'sudo not found\n'
 		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
@@ -61,11 +62,7 @@ function prepare() {
 }
 
 function cleanup() {
-	# rm -rf "${CURDIR}/GlusterFS.yml"
-	# rm -rf "${CURDIR}/jvm.options"
-	# rm -rf "${CURDIR}/GlusterFS"
-	# rm -rf "${CURDIR}/OpenJDK10_s390x_Linux_jdk-10.0.2.13.tar.gz"
-
+	rm -rf "${CURDIR}/patch.diff"
 	printf -- '\nCleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -88,9 +85,8 @@ function configureAndInstall() {
 		make
 		make install
 		ldconfig
+		printf -- 'URCU installed successfully\n' | tee -a "$LOG_FILE"
 	fi
-
-	printf -- 'URCU installed successfully\n' | tee -a "$LOG_FILE"
 	
 	cd "${CURDIR}"
 
@@ -103,9 +99,10 @@ function configureAndInstall() {
 		./configure
 		make
 		make install
+		printf -- 'thin-provisioning-tools installed\n' | tee -a "$LOG_FILE"
 	fi
 	
-	printf -- 'thin-provisioning-tools installed\n' | tee -a "$LOG_FILE"
+	
 
 	cd "${CURDIR}"
 
@@ -129,6 +126,7 @@ function configureAndInstall() {
 		cp /usr/local/include/urcu/rculist.h contrib/userspace-rcu/rculist-extra.h
 	else
 		#Patch to be applied here
+		cd "${CURDIR}"
 		wget -q $REPO_URL/patch.diff
 	    patch "${CURDIR}/glusterfs/xlators/performance/io-threads/src/io-threads.h" patch.diff
 	fi
@@ -139,8 +137,11 @@ function configureAndInstall() {
 	cd "${CURDIR}/glusterfs"
 	make
 	make install
+	export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+	ldconfig
 	printf -- 'Built GlusterFS successfully \n\n' | tee -a "$LOG_FILE"
 
+	cd $HOME
 	if [[ "$(cat .bashrc | grep -q LD_LIBRARY_PATH)" ]]; then
 		printf -- '\nChanging LD_LIBRARY_PATH\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bLD_LIBRARY_PATH\b.*$/export LD_LIBRARY_PATH=\/usr\/local\/lib:$LD_LIBRARY_PATH\/p' .bashrc | tee -a "$LOG_FILE"
@@ -149,7 +150,7 @@ function configureAndInstall() {
 		echo "export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH" >>.bashrc
 	fi
 
-	ldconfig
+
 }
 
 function logDetails() {
@@ -194,7 +195,7 @@ function printSummary() {
 	printf -- '\n\nSet LD_LIBRARY_PATH to start using GlusterFS right away.' | tee -a "$LOG_FILE"
 	printf -- '\nLD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH\n' | tee -a "$LOG_FILE"
 	printf -- '\nOr restart the session to Configure the changes automatically' | tee -a "$LOG_FILE"
-	printf -- '\nFor more information on curator client visit https://www.elastic.co/guide/en/GlusterFS/client/curator/current/index.html \n\n' | tee -a "$LOG_FILE"
+	printf -- '\nFor more information on GlusterFS visit https://www.gluster.org/ \n\n' | tee -a "$LOG_FILE"
 }
 
 logDetails
