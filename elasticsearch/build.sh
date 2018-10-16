@@ -35,7 +35,7 @@ function prepare() {
 		printf -- 'Sudo : Yes\n' >>"$LOG_FILE"
 	else
 		printf -- 'Sudo : No \n' >>"$LOG_FILE"
-		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
+		printf -- 'You can install sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
@@ -92,6 +92,7 @@ function configureAndInstall() {
 	sudo ln -sf /usr/local/jdk-10.0.2+13/bin/java /usr/bin/
 	printf -- '\nAdding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
 	#add JAVA_HOME to .bashrc
+	cd "${HOME}"
 	if [[ "$(cat .bashrc | grep -q JAVA_HOME)" ]]; then
 		printf -- '\nChanging JAVA_HOME\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bJAVA_HOME\b.*$/export JAVA_HOME=\/usr\/local\/jdk-9.0.4+11\//p' .bashrc | tee -a "$LOG_FILE"
@@ -106,7 +107,7 @@ function configureAndInstall() {
 	fi
 
 	printenv >>"$LOG_FILE"
-
+	cd "${CURDIR}"
 	# Download and configure ElasticSearch
 	printf -- '\nDownloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
 	git clone -q -b v$PACKAGE_VERSION $ES_REPO_URL
