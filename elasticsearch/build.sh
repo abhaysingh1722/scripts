@@ -241,8 +241,8 @@ case "$DISTRO" in
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	sudo apt-get update > /dev/null
-	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	prepare
+	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	configureAndInstall
 	startService
 	installClient
@@ -251,8 +251,8 @@ case "$DISTRO" in
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	prepare
+	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	configureAndInstall
 	startService
 	installClient
@@ -261,8 +261,8 @@ case "$DISTRO" in
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo zypper --non-interactive install -q tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	prepare
+	sudo zypper --non-interactive install tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	configureAndInstall
 	startService
 	installClient
