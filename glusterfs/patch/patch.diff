@@ -1,9 +1,11 @@
+--- a/glusterfs/xlators/performance/io-threads/src/io-threads.h
++++ b/glusterfs/xlators/performance/io-threads/src/io-threads.h
 @@ -37,7 +37,7 @@ struct iot_conf;
-#define IOT_MAX_THREADS         64
+ #define IOT_MAX_THREADS         64
 
 
 -#define IOT_THREAD_STACK_SIZE   ((size_t)(256*1024))
 +#define IOT_THREAD_STACK_SIZE   ((size_t)(512*1024))
 
 
-typedef struct {
+ typedef enum {
