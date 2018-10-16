@@ -6,4 +6,4 @@
 +#define IOT_THREAD_STACK_SIZE   ((size_t)(512*1024))
 
 
-typedef enum {
+typedef struct {
