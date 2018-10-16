@@ -60,8 +60,8 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${CURDIR}/elasticsearch.yml"
-	rm -rf "${CURDIR}/jvm.options"
+	rm -rf "${CURDIR}/patch1.diff"
+	rm -rf "${CURDIR}/patch2.diff"
 	rm -rf "${CURDIR}/elasticsearch"
 	rm -rf "${CURDIR}/OpenJDK10_s390x_Linux_jdk-10.0.2.13.tar.gz"
 
