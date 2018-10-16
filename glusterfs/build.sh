@@ -220,7 +220,7 @@ case "$DISTRO" in
 
 	;;
 
-"sles-12.3" | "sles-15")
+"sles-12.3" | "sles-12.2")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	prepare
