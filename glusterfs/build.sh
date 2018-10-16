@@ -208,7 +208,7 @@ case "$DISTRO" in
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	prepare
 	sudo apt-get update >/dev/null
-	sudo apt-get install -y -qq make automake autoconf libtool flex bison pkg-config libssl-dev libxml2-dev python-dev libaio-dev libibverbs-dev librdmacm-dev libreadline-dev liblvm2-dev libglib2.0-dev liburcu-dev libcmocka-dev libsqlite3-dev libacl1-dev wget tar dbench git xfsprogs attr nfs-common yajl-tools sqlite3 libxml2-utils thin-provisioning-tools bc >/dev/null
+	sudo apt-get install -y -qq make patch automake autoconf libtool flex bison pkg-config libssl-dev libxml2-dev python-dev libaio-dev libibverbs-dev librdmacm-dev libreadline-dev liblvm2-dev libglib2.0-dev liburcu-dev libcmocka-dev libsqlite3-dev libacl1-dev wget tar dbench git xfsprogs attr nfs-common yajl-tools sqlite3 libxml2-utils thin-provisioning-tools bc >/dev/null
 	configureAndInstall
 	;;
 
@@ -216,7 +216,7 @@ case "$DISTRO" in
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	prepare
-	sudo yum install -y -q wget git make gcc-c++ libaio-devel boost-devel expat-devel autoconf autoheader automake libtool flex bison openssl-devel libacl-devel sqlite-devel libxml2-devel python-devel python attr yajl nfs-utils xfsprogs popt-static sysvinit-tools psmisc libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel fuse-devel bc >/dev/null
+	sudo yum install -y -q wget git patch make gcc-c++ libaio-devel boost-devel expat-devel autoconf autoheader automake libtool flex bison openssl-devel libacl-devel sqlite-devel libxml2-devel python-devel python attr yajl nfs-utils xfsprogs popt-static sysvinit-tools psmisc libibverbs-devel librdmacm-devel readline-devel lvm2-devel glib2-devel fuse-devel bc >/dev/null
 	configureAndInstall
 
 	;;
@@ -225,7 +225,7 @@ case "$DISTRO" in
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	prepare
-	sudo zypper --non-interactive install -q wget which git make gcc-c++ libaio-devel boost-devel autoconf automake cmake libtool flex bison lvm2-devel libacl-devel python-devel python attr xfsprogs sysvinit-tools psmisc bc libopenssl-devel libxml2-devel sqlite3 sqlite3-devel popt-devel nfs-utils libyajl2 python-xml net-tools >/dev/null
+	sudo zypper --non-interactive install wget patch which git make gcc-c++ libaio-devel boost-devel autoconf automake cmake libtool flex bison lvm2-devel libacl-devel python-devel python attr xfsprogs sysvinit-tools psmisc bc libopenssl-devel libxml2-devel sqlite3 sqlite3-devel popt-devel nfs-utils libyajl2 python-xml net-tools >/dev/null
 	configureAndInstall
 
 	;;
