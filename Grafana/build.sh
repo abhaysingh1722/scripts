@@ -57,7 +57,6 @@ function prepare() {
 }
 
 function cleanup() {
-	#############################Add Cleanup
 	rm /opt/yarn-v1.3.2.tar.gz
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
@@ -221,11 +220,9 @@ done
 
 function printSummary() {
 	printf -- '\n***************************************************************************************\n'
-	#######################check
 	printf -- "Getting Started: \n"
 	printf -- "To run grafana , run the following command : \n"
 	printf -- "    grafana-server &   (Run in background)  \n"
-	printf -- "    grafana-server -logtostderr  (Foreground with console logs)  \n\n"
 	printf -- "\nAccess grafana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \n"
 	printf -- '***************************************************************************************\n'
