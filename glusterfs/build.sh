@@ -115,6 +115,7 @@ function configureAndInstall() {
 	printf -- '\nDownloading GlusterFS. Please wait.\n' | tee -a "$LOG_FILE"
 	git clone -q -b v$PACKAGE_VERSION $GLUSTER_REPO_URL
 	sleep 2
+	cd "${CURDIR}/glusterfs"
 	./autogen.sh
 	if [[ "${ID}" == "sles" ]]; then
 		./configure --enable-gnfs --disable-events # for SLES
@@ -122,8 +123,6 @@ function configureAndInstall() {
 		./configure --enable-gnfs # for RHEL and Ubuntu
 	fi
 
-	./autogen.sh
-	./configure --enable-gnfs
 
 	if [[ "${ID}" == "rhel" ]]; then
 		rm contrib/userspace-rcu/rculist-extra.h
@@ -238,4 +237,3 @@ esac
 
 # Print Summary
 printSummary
-
