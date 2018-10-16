@@ -57,7 +57,7 @@ function prepare() {
 
 function cleanup() {
 	rm -rf "${GOPATH}/src/github.com/google/cadvisor"
-	rm -rf "${CURDIR}/crc32.go"
+	rm -rf "${CURDIR}/patch.diff"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
