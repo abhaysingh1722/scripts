@@ -46,7 +46,7 @@ function prepare() {
 		if [[ "${ID}" != "ubuntu" ]]; then
 			printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
 			printf -- 'URCU\n\n' | tee -a "$LOG_FILE"
-			printf -- 'thin-provisioning-tools\n\n' | tee -a "$LOG_FILE"
+			printf -- 'Thin-provisioning-tools\n\n' | tee -a "$LOG_FILE"
 			printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 			while true; do
 				read -r -p "Do you want to continue (y/n) ? :  " yn
@@ -64,7 +64,21 @@ function prepare() {
 }
 
 function cleanup() {
+
 	rm -rf "${CURDIR}/patch.diff"
+    rm -rf "${CURDIR}/glusterfs"
+	
+	#for rhel
+	if [[ "${ID}" == "rhel" ]]; then
+		rm -rf "${CURDIR}/userspace-rcu"
+		rm -rf "${CURDIR}/thin-provisioning-tools"
+	fi
+
+	#for sles
+	if [[ "${ID}" == "sles" ]]; then
+		rm -rf "${CURDIR}/userspace-rcu"
+	fi
+
 	printf -- '\nCleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
