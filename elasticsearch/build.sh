@@ -145,7 +145,7 @@ function startService() {
 		sudo /usr/sbin/groupadd elastic # If group is not already created
 
 	fi
-	sudo chown $TEST_USER:elastic -R /usr/share/elasticsearch
+	sudo chown "$TEST_USER:elastic" -R /usr/share/elasticsearch
 
 	#To access elastic search from anywhere
 	sudo ln -sf /usr/share/elasticsearch/bin/elasticsearch /usr/bin/

@@ -9,17 +9,19 @@ PACKAGE_VERSION="4.0.2"
 CURDIR="$(pwd)"
 REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/glusterfs/patch"
 GLUSTER_REPO_URL="https://github.com/gluster/glusterfs"
-LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
 FORCE="false"
 
 trap cleanup 0 1 2 ERR
 
+mkdir -p "$CURDIR/logs"
+
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
 	source "/etc/os-release"
 else
-	cat /etc/redhat-release | tee -a "$LOG_FILE"
+	cat /etc/redhat-release >> "$LOG_FILE"
 	export ID="rhel"
 	export VERSION_ID="6.x"
 	export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
@@ -208,7 +210,7 @@ done
 
 function printSummary() {
 	printf -- '\n\nSet LD_LIBRARY_PATH to start using GlusterFS right away.' | tee -a "$LOG_FILE"
-	printf -- '\nLD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH\n' | tee -a "$LOG_FILE"
+	printf -- "\nLD_LIBRARY_PATH=/usr/local/lib:%s \n" "$LD_LIBRARY_PATH" | tee -a "$LOG_FILE"
 	printf -- '\nOr restart the session to Configure the changes automatically' | tee -a "$LOG_FILE"
 	printf -- '\nFor more information on GlusterFS visit https://www.gluster.org/ \n\n' | tee -a "$LOG_FILE"
 }
