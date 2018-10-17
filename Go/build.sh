@@ -6,11 +6,13 @@ set -e
 
 PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
-LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
 
 trap "" 1 2 ERR
+
+mkdir -p "logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then

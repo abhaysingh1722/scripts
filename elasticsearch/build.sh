@@ -7,13 +7,15 @@ set -e
 PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
-REPO_URL="https://raw.githubusercontent.com/prankkelkar/git-demo/master"
+REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
-LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
 FORCE="false"
 
 trap cleanup 0 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -35,7 +37,7 @@ function prepare() {
 		printf -- 'Sudo : Yes\n' >>"$LOG_FILE"
 	else
 		printf -- 'Sudo : No \n' >>"$LOG_FILE"
-		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
+		printf -- 'You can install sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
@@ -60,8 +62,8 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${CURDIR}/elasticsearch.yml"
-	rm -rf "${CURDIR}/jvm.options"
+	rm -rf "${CURDIR}/patch1.diff"
+	rm -rf "${CURDIR}/patch2.diff"
 	rm -rf "${CURDIR}/elasticsearch"
 	rm -rf "${CURDIR}/OpenJDK10_s390x_Linux_jdk-10.0.2.13.tar.gz"
 
@@ -92,6 +94,7 @@ function configureAndInstall() {
 	sudo ln -sf /usr/local/jdk-10.0.2+13/bin/java /usr/bin/
 	printf -- '\nAdding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
 	#add JAVA_HOME to .bashrc
+	cd "${HOME}"
 	if [[ "$(cat .bashrc | grep -q JAVA_HOME)" ]]; then
 		printf -- '\nChanging JAVA_HOME\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bJAVA_HOME\b.*$/export JAVA_HOME=\/usr\/local\/jdk-9.0.4+11\//p' .bashrc | tee -a "$LOG_FILE"
@@ -106,7 +109,7 @@ function configureAndInstall() {
 	fi
 
 	printenv >>"$LOG_FILE"
-
+	cd "${CURDIR}"
 	# Download and configure ElasticSearch
 	printf -- '\nDownloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
 	git clone -q -b v$PACKAGE_VERSION $ES_REPO_URL
@@ -114,11 +117,14 @@ function configureAndInstall() {
 
 	#Patch Applied for known errors
 	cd "${CURDIR}"
-	wget -q $REPO_URL/jvm.options
-	wget -q $REPO_URL/elasticsearch.yml
-	printf -- '\nReplacing files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
-	cp jvm.options "${CURDIR}/elasticsearch/distribution/src/config/jvm.options"
-	cp elasticsearch.yml "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml"
+	# patch config file 
+	wget -q $REPO_URL/patch1.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/jvm.options" patch1.diff
+
+	wget -q $REPO_URL/patch2.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml" patch2.diff
+
+	printf -- '\nPatch applied for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
 
 	#Build elasticsearch
 	printf -- '\nBuilding Elasticsearch \n' | tee -a "$LOG_FILE"
@@ -139,7 +145,7 @@ function startService() {
 		sudo /usr/sbin/groupadd elastic # If group is not already created
 
 	fi
-	sudo chown $TEST_USER:elastic -R /usr/share/elasticsearch
+	sudo chown "$TEST_USER:elastic" -R /usr/share/elasticsearch
 
 	#To access elastic search from anywhere
 	sudo ln -sf /usr/share/elasticsearch/bin/elasticsearch /usr/bin/
@@ -229,7 +235,8 @@ function printSummary() {
 }
 
 logDetails
-#checkPrequisites #Check Prequisites
+#checkPrequisites
+prepare
 
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
@@ -237,8 +244,7 @@ case "$DISTRO" in
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
 	sudo apt-get update > /dev/null
-	sudo apt-get install -y -qq tar wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
-	prepare
+	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	configureAndInstall
 	startService
 	installClient
@@ -247,8 +253,7 @@ case "$DISTRO" in
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo yum install -y -q unzip curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
-	prepare
+	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	configureAndInstall
 	startService
 	installClient
@@ -257,8 +262,7 @@ case "$DISTRO" in
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo zypper --non-interactive install -q tar wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
-	prepare
+	sudo zypper -q --non-interactive install tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	configureAndInstall
 	startService
 	installClient

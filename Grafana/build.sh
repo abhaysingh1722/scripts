@@ -13,10 +13,12 @@ GO_INSTALL_URL="https://raw.githubusercontent.com/sid226/scripts/master/Go/build
 # Update URL with master repo
 PHANTOMJS_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/build.sh"
 FORCE="false"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 
 trap cleanup 0 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then

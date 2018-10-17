@@ -8,9 +8,11 @@ PACKAGE_NAME="kibana"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
 WORKDIR="/usr/local"
-LOG_FILE="${WORKDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${WORKDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap "" 1 2 ERR
+
+mkdir -p "$WORKDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
