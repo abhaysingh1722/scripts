@@ -13,10 +13,12 @@ GO_INSTALL_URL="https://raw.githubusercontent.com/sid226/scripts/master/Go/build
 # Update URL with master repo
 PHANTOMJS_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/build.sh"
 FORCE="false"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 
 trap cleanup 0 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -106,7 +108,8 @@ function configureAndInstall() {
 		printf -- "Created grafana Directory at GOPATH"
 		mkdir -p "$GOPATH/src/github.com/grafana"
 	fi
-	cd $GOPATH/src/github.com/grafana
+
+	cd "$GOPATH/src/github.com/grafana"
 	if [ -d "$GOPATH/src/github.com/grafana/grafana" ]; then
 		printf -- "Removing Existing grafana Directory at GOPATH"
 		rm -rf "$GOPATH/src/github.com/grafana/grafana"
@@ -121,8 +124,8 @@ function configureAndInstall() {
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
 
 	#Add grafana to /usr/bin
-	cp $GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server /usr/bin/
-	cp $GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli /usr/bin/
+	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server" /usr/bin/
+	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli" /usr/bin/
 
 	printf -- 'Add grafana to /usr/bin success \n' >>"$LOG_FILE"
 
@@ -156,7 +159,7 @@ function configureAndInstall() {
 	printf -- 'yarn install success \n' >>"$LOG_FILE"
 
 	# Install grunt
-	cd $GOPATH/src/github.com/grafana/grafana
+	cd "$GOPATH/src/github.com/grafana/grafana"
 	npm install grunt 
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 

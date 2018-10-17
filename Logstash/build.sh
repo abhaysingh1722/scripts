@@ -8,9 +8,11 @@ PACKAGE_NAME="logstash"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
 WORKDIR="/usr/local"
-LOG_FILE="${WORKDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${WORKDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap "" 1 2 ERR
+
+mkdir -p "$WORKDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -68,10 +70,12 @@ function configureAndInstall() {
 
 	wget http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
 	wget https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
+	
 	tail -n +3 installer.properties.java | tee installer.properties
 	cat installer.properties >>"${LOG_FILE}"
 	chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
 	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
+	
 	export JAVA_HOME=/opt/ibm/java
 	export PATH="${JAVA_HOME}/bin:$PATH"
 	java -version

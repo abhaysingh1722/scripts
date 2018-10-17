@@ -7,12 +7,14 @@ set -e
 PACKAGE_NAME="phantomjs"
 PACKAGE_VERSION="2.1.1"
 CURDIR="$(pwd)"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
 CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
 
 trap "" 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it  doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -87,11 +89,14 @@ function configureAndInstall() {
 		printf -- 'Build cURL success\n' >>"$LOG_FILE"
 
 		# Generate ca-bundle.crt for curl
-		echo insecure >>$HOME/.curlrc
+		echo insecure >> "$HOME/.curlrc"
 		wget -q https://raw.githubusercontent.com/curl/curl/curl-7_53_0/lib/mk-ca-bundle.pl
 		perl mk-ca-bundle.pl -k
-		export SSL_CERT_FILE=$(pwd)/ca-bundle.crt
-		rm $HOME/.curlrc
+		
+		SSL_CERT_FILE=$(pwd)/ca-bundle.crt
+		export SSL_CERT_FILE
+
+		rm "$HOME/.curlrc"
 
 		printf -- 'Build OpenSSL success\n' >>"$LOG_FILE"
 

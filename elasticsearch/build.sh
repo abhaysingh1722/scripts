@@ -9,11 +9,13 @@ PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
 REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
-LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
 FORCE="false"
 
 trap cleanup 0 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
