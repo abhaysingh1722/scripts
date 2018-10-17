@@ -43,21 +43,23 @@ function prepare() {
 	if [[ "$FORCE" == "true" ]]; then
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
 	else
-		printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
-		printf -- 'URCU\n\n' | tee -a "$LOG_FILE"
-		printf -- 'thin-provisioning-tools\n\n' | tee -a "$LOG_FILE"
-		printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
-		while true; do
-			read -r -p "Do you want to continue (y/n) ? :  " yn
-			case $yn in
-			[Yy]*)
+		if [[ "${ID}" != "ubuntu" ]]; then
+			printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
+			printf -- 'URCU\n\n' | tee -a "$LOG_FILE"
+			printf -- 'thin-provisioning-tools\n\n' | tee -a "$LOG_FILE"
+			printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+			while true; do
+				read -r -p "Do you want to continue (y/n) ? :  " yn
+				case $yn in
+				[Yy]*)
 
-				break
-				;;
-			[Nn]*) exit ;;
-			*) echo "Please provide Correct input to proceed." ;;
-			esac
-		done
+					break
+					;;
+				[Nn]*) exit ;;
+				*) echo "Please provide Correct input to proceed." ;;
+				esac
+			done
+		fi
 	fi
 }
 
