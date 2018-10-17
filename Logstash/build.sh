@@ -4,7 +4,7 @@
 
 set -e
 
-PACKAGE_NAME="kibana"
+PACKAGE_NAME="logstash"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
 WORKDIR="/usr/local"
@@ -35,7 +35,7 @@ function prepare() {
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "${LOG_FILE}"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
+		printf -- "\n\nAs part of the installation , IBMSDK 8 will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -51,8 +51,10 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
+	rm -rf "${WORKDIR}/apache-ant-1.9.10"
+	rm -rf "${WORKDIR}/ibm-java-s390x-sdk-8.0-5.17.bin"
+	rm -rf "${WORKDIR}/installer.properties"
+	rm -rf "${WORKDIR}/jffi-jffi-1.2.16/"
 	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
@@ -60,35 +62,49 @@ function configureAndInstall() {
 	#cleanup
 	printf -- 'Configuration and Installation started \n' | tee -a "${LOG_FILE}"
 
-	# Install Nodejs
-	printf -- 'Downloading nodejs binaries \n' | tee -a "${LOG_FILE}"
+	# Install IBMSDK
+	printf -- 'Configuring IBMSDK \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
 
-	wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz | tee -a "${LOG_FILE}"
-	tar xvf node-v8.11.4-linux-s390x.tar.gz >> "${LOG_FILE}"
-	mv node-v8.11.4-linux-s390x nodejs
-	export PATH=$PWD/nodejs/bin:$PATH
-	node -v  >> "${LOG_FILE}"
+	wget http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
+	wget https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
+	tail -n +3 installer.properties.java | tee installer.properties
+	cat installer.properties >>"${LOG_FILE}"
+	chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
+	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
+	export JAVA_HOME=/opt/ibm/java
+	export PATH="${JAVA_HOME}/bin:$PATH"
+	java -version
 
-	#Install Kibana
-	printf -- 'Installing Kibana..... \n' | tee -a "${LOG_FILE}"
-	printf -- 'Get Kibana release package and extract\n' | tee -a "${LOG_FILE}"
+	# Install Ant (for RHEL 6.10)
+	if [[ "${VERSION_ID}" == "6.x" ]]; then
+		wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
+		tar -zxvf apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
+		export ANT_HOME="${WORKDIR}/apache-ant-1.9.10"
+		export PATH="${ANT_HOME}/bin:${PATH}"
+		printf -- 'Installed Ant successfully for Rhel 6.10 \n' >>"${LOG_FILE}"
+	fi
+
+	#Install Logstash
+	printf -- 'Installing Logstash..... \n' | tee -a "${LOG_FILE}"
+	printf -- 'Download source code of Logstash\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz  >> "${LOG_FILE}"
-	tar xvf kibana-6.4.2-linux-x86_64.tar.gz >> "${LOG_FILE}"
+	wget https://artifacts.elastic.co/downloads/logstash/logstash-6.4.2.zip >>"${LOG_FILE}"
+	unzip -u logstash-6.4.2.zip >>"${LOG_FILE}"
 
-	printf -- 'Replace Node.js in the package with the installed Node.js.\n' | tee -a "${LOG_FILE}"
-	cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-	mv node node_old # rename the node
-	ln -s "${WORKDIR}"/nodejs node >> "${LOG_FILE}"
+	printf -- 'Jruby runs on JVM and needs a native library (libjffi-1.2.so: java foreign language interface). Get jffi source code and build with ant.\n' | tee -a "${LOG_FILE}"
+	cd "${WORKDIR}"
+	wget https://github.com/jnr/jffi/archive/jffi-1.2.16.zip >>"${LOG_FILE}"
+	unzip -u jffi-1.2.16.zip >>"${LOG_FILE}"
+	cd jffi-jffi-1.2.16
+	ant >>"${LOG_FILE}"
 
-	# Add config/kibana.yml to /etc/kibana/config/
-	sudo mkdir -p /etc/kibana/config/
-	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/config/kibana.yml" /etc/kibana/config/kibana.yml
+	printf -- 'Add libjffi-1.2.so to LD_LIBRARY_PATH \n' >>"${LOG_FILE}"
+	export LD_LIBRARY_PATH="${WORKDIR}/jffi-jffi-1.2.16/build/jni/:${LD_LIBRARY_PATH}"
 
-	# Add kibana to /usr/bin
-	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
-	printf -- 'Installed kibana successfully \n' >> "${LOG_FILE}"
+	# Link Logstash to /usr/bin
+	sudo ln -s "${WORKDIR}/logstash-6.4.2/bin/logstash" /usr/bin/
+	printf -- 'Installed logstash successfully \n' >>"${LOG_FILE}"
 
 	#Cleanup
 	cleanup
@@ -144,12 +160,8 @@ done
 
 function printSummary() {
 	printf -- '\n***************************************************************************************\n'
-	printf -- "Getting Started: \n"
-	printf -- "Pre-requisite: Make sure Elasticsearch instance is running.\nUpdate the Kibana configuration file /etc/kibana/config/kibana.yml to set elasticsearch.url to the Elasticsearch host. \n"
-	printf -- "Start Kibana: \n"
-	printf -- "    kibana  & (Run in background) \n"
-	printf -- "\nAccess kibana UI using the below link : "
-	printf -- "http://<host-ip>:<port>/    [Default port = 5601] \n"
+	printf -- "Run Logstash: \n"
+	printf -- "    logstash -V (To Check the version) \n"
 	printf -- '***************************************************************************************\n'
 	printf -- '\n'
 }
@@ -164,19 +176,32 @@ case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
 	sudo apt-get update
-	sudo apt-get install -qq wget tar >/dev/null
+	sudo apt-get install -qq ant make wget unzip tar gcc >/dev/null
+	configureAndInstall
+	;;
+
+"rhel-6.x")
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
+	sudo yum install -y -q wget unzip tar gcc make >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo yum install -y -q wget tar >/dev/null
+	sudo yum install -y -q ant wget unzip make gcc tar >/dev/null
 	configureAndInstall
 	;;
 
-"sles-12.3" | "sles-15")
+"sles-12.3")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-	sudo zypper -q install -y wget tar >/dev/null
+	sudo zypper install -y --type pattern Basis-Devel
+	sudo zypper -q install -y ant wget unzip make gcc tar >/dev/null
+	configureAndInstall
+	;;
+
+"sles-15")
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
+	sudo zypper -q install -y ant wget unzip make gcc tar >/dev/null
 	configureAndInstall
 	;;
 
