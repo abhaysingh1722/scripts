@@ -72,8 +72,8 @@
 
         function cleanup() {
             # Remove artifacts
-            rm -rf ${GOPATH}/src/github.com/prometheus
-            printf -- "Cleaned up the artifacts\n" >>$LOG_FILE
+            rm -rf "${GOPATH}/src/github.com/prometheus"
+            printf -- "Cleaned up the artifacts\n" >> "$LOG_FILE"
         }
 
         function configureAndInstall() {
@@ -91,7 +91,7 @@
             printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
             
             #Check if directory exsists
-            if [ ! -d $HOME/go ];then
+            if [ ! -d "$HOME/go" ];then
                  mkdir "$HOME/go"
             fi
             export GOPATH="$HOME/go"
@@ -102,17 +102,12 @@
         printenv >> "$LOG_FILE"
 
         # Checkout the code from repository
-        cd ${GOPATH}
-        mkdir -p $GOPATH/src/github.com/prometheus
-        cd $GOPATH/src/github.com/prometheus
+        cd "${GOPATH}"
+        mkdir -p "$GOPATH/src/github.com/prometheus"
+        cd "$GOPATH/src/github.com/prometheus"
         printf -- 'Cloning Prometheus code \n' >> "$LOG_FILE"
         
-        git clone -b "v${PACKAGE_VERSION}" -q https://github.com/prometheus/prometheus.git
-       
-        #git clone https://github.com/prometheus/prometheus.git
-        
-        #git checkout v2.4.2
-        
+        git clone -b "v${PACKAGE_VERSION}" -q https://github.com/prometheus/prometheus.git       
         printf -- 'Cloned the prometheus code \n' >>"$LOG_FILE"
 
         # Build prometheus
