@@ -38,7 +38,7 @@ function prepare() {
 	else
 		printf -- 'Sudo : No \n' >>"$LOG_FILE"
 		printf -- 'sudo not found\n'
-		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
+		printf -- 'You can install the same from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
