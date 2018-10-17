@@ -204,6 +204,9 @@ function configureAndInstall() {
 	cp grafana.ini /etc/grafana/
 	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
 
+	#Create alias
+	alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'
+
 	#Cleanup
 	cleanup
 
@@ -260,9 +263,11 @@ function printSummary() {
 	printf -- '\\n***************************************************************************************\n'
 	printf -- "Getting Started: \\n"
 	printf -- "To run grafana , run the following command : \\n"
-	printf -- "    grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini &   (Run in background)  \\n"
+	printf -- "    grafana-server  &   (Run in background)  \\n"
 	printf -- "\\nAccess grafana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \\n"
+	printf -- "\\n Default homepath: /usr/local/share/grafana \\n"
+	printf -- "\\n Default config: /etc/grafana/grafana.ini \\n"
 	printf -- '***************************************************************************************\n'
 	printf -- '\\n'
 }
