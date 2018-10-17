@@ -87,11 +87,14 @@ function configureAndInstall() {
 		printf -- 'Build cURL success\n' >>"$LOG_FILE"
 
 		# Generate ca-bundle.crt for curl
-		echo insecure >>$HOME/.curlrc
+		echo insecure >> "$HOME/.curlrc"
 		wget -q https://raw.githubusercontent.com/curl/curl/curl-7_53_0/lib/mk-ca-bundle.pl
 		perl mk-ca-bundle.pl -k
-		export SSL_CERT_FILE=$(pwd)/ca-bundle.crt
-		rm $HOME/.curlrc
+		
+		SSL_CERT_FILE=$(pwd)/ca-bundle.crt
+		export SSL_CERT_FILE
+
+		rm "$HOME/.curlrc"
 
 		printf -- 'Build OpenSSL success\n' >>"$LOG_FILE"
 

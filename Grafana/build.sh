@@ -106,7 +106,8 @@ function configureAndInstall() {
 		printf -- "Created grafana Directory at GOPATH"
 		mkdir -p "$GOPATH/src/github.com/grafana"
 	fi
-	cd $GOPATH/src/github.com/grafana
+
+	cd "$GOPATH/src/github.com/grafana"
 	if [ -d "$GOPATH/src/github.com/grafana/grafana" ]; then
 		printf -- "Removing Existing grafana Directory at GOPATH"
 		rm -rf "$GOPATH/src/github.com/grafana/grafana"
@@ -121,8 +122,8 @@ function configureAndInstall() {
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
 
 	#Add grafana to /usr/bin
-	cp $GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server /usr/bin/
-	cp $GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli /usr/bin/
+	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server" /usr/bin/
+	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli" /usr/bin/
 
 	printf -- 'Add grafana to /usr/bin success \n' >>"$LOG_FILE"
 
@@ -156,7 +157,7 @@ function configureAndInstall() {
 	printf -- 'yarn install success \n' >>"$LOG_FILE"
 
 	# Install grunt
-	cd $GOPATH/src/github.com/grafana/grafana
+	cd "$GOPATH/src/github.com/grafana/grafana"
 	npm install grunt 
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 

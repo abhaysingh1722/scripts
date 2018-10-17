@@ -68,10 +68,12 @@ function configureAndInstall() {
 
 	wget http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
 	wget https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
+	
 	tail -n +3 installer.properties.java | tee installer.properties
 	cat installer.properties >>"${LOG_FILE}"
 	chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
 	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
+	
 	export JAVA_HOME=/opt/ibm/java
 	export PATH="${JAVA_HOME}/bin:$PATH"
 	java -version
