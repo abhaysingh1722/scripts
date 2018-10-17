@@ -95,7 +95,7 @@ function configureAndInstall() {
 	printf -- '\nAdding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
 	#add JAVA_HOME to .bashrc
 	cd "${HOME}"
-	if [[ "$(cat .bashrc | grep -q JAVA_HOME)" ]]; then
+	if [[ "$(grep JAVA_HOME .bashrc)" ]]; then
 		printf -- '\nChanging JAVA_HOME\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bJAVA_HOME\b.*$/export JAVA_HOME=\/usr\/local\/jdk-9.0.4+11\//p' .bashrc | tee -a "$LOG_FILE"
 

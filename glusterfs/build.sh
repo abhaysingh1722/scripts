@@ -159,7 +159,7 @@ function configureAndInstall() {
 	printf -- 'Built GlusterFS successfully \n\n' | tee -a "$LOG_FILE"
 
 	cd "${HOME}"
-	if [[ "$(cat .bashrc | grep -q LD_LIBRARY_PATH)" ]]; then
+	if [[ "$(grep LD_LIBRARY_PATH .bashrc)" ]]; then
 		printf -- '\nChanging LD_LIBRARY_PATH\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bLD_LIBRARY_PATH\b.*$/export LD_LIBRARY_PATH=\/usr\/local\/lib/p' .bashrc | tee -a "$LOG_FILE"
 
