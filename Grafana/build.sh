@@ -61,8 +61,20 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "$GOPATH/src/github.com/grafana"
-	rm /opt/yarn-v1.3.2.tar.gz
+
+	#Check if Grafana directory exists
+	if [ -d "$GOPATH/src/github.com/grafana" ]; then
+		rm -rf "$GOPATH/src/github.com/grafana"
+	fi
+
+	if [ -f /opt/yarn-v1.3.2.tar.gz ]; then
+		rm /opt/yarn-v1.3.2.tar.gz
+	fi
+
+	if [ -f "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz" ]; then
+		"$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
+	fi
+
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -176,19 +188,21 @@ function configureAndInstall() {
 
 	# Move build artifacts to default directory
 	if [ ! -d "/usr/local/share/grafana" ]; then
-		printf -- "Created grafana Directory at /usr/local/share"
+		printf -- "Created grafana Directory at /usr/local/share" >>"$LOG_FILE"
 		mkdir /usr/local/share/grafana
 	fi
 
 	cp -r "$GOPATH/src/github.com/grafana/grafana/*" /usr/local/share/grafana
+	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
 
 	#Add grafana config
 	if [ ! -d "/etc/grafana" ]; then
-		printf -- "Created grafana config Directory at /etc"
+		printf -- "Created grafana config Directory at /etc" >>"$LOG_FILE"
 		mkdir /etc/grafana/
 	fi
 	wget -q $GRAFANA_CONFIG_URL
 	cp grafana.ini /etc/grafana/
+	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
 
 	#Cleanup
 	cleanup
