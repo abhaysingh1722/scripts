@@ -96,10 +96,10 @@ function configureAndInstall() {
 		printf -- 'Building URCU\n' | tee -a "$LOG_FILE"
 		git clone -q git://git.liburcu.org/userspace-rcu.git
 		cd userspace-rcu
-		./bootstrap 
+		./bootstrap
 		./configure
-		make
-		make install
+		make --silent
+		make --silent install
 		ldconfig
 		printf -- 'URCU installed successfully\n' | tee -a "$LOG_FILE"
 	fi
@@ -113,8 +113,8 @@ function configureAndInstall() {
 		cd thin-provisioning-tools
 		autoreconf
 		./configure
-		make
-		make install
+		make --silent
+		make --silent install
 		printf -- 'thin-provisioning-tools installed\n' | tee -a "$LOG_FILE"
 	fi
 	
@@ -127,7 +127,7 @@ function configureAndInstall() {
 	git clone -q -b v$PACKAGE_VERSION $GLUSTER_REPO_URL
 	sleep 2
 	cd "${CURDIR}/glusterfs"
-	./autogen.sh
+	./autogen.sh >/dev/null
 	if [[ "${ID}" == "sles" ]]; then
 		./configure --enable-gnfs --disable-events # for SLES
 	else
@@ -149,8 +149,8 @@ function configureAndInstall() {
 	printf -- '\nBuilding GlusterFS \n' | tee -a "$LOG_FILE"
 	printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 	cd "${CURDIR}/glusterfs"
-	make
-	make install
+	make --silent
+	make --silent install
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 	ldconfig
 	printenv >>"$LOG_FILE"
