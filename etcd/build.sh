@@ -203,13 +203,13 @@ function printSummary() {
     printf -- "\nRunning etcd: \n"
     printf -- " etcd  \n\n"
     printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x, set following\n"
-    printf -- "export ETCD_UNSUPPORTED_ARCH=s390x \n"
-    printf -- "This will bring up etcd listening on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
+    printf -- "\nexport ETCD_UNSUPPORTED_ARCH=s390x \n"
+    printf -- "\nThis will bring up etcd listening on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
     printf -- "Next, let's set a single key, and then retrieve it:"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
-    printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml"
-    printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml"
+    printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
+    printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml \n"
     printf -- "You have successfully started etcd and written a key to the store.\n"
     printf -- '***************************************************************************************\n'
 }
