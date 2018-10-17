@@ -205,7 +205,8 @@ function configureAndInstall() {
 	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
 
 	#Create alias
-	alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'
+	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >> ~/.bashrc
+    source ~/.bashrc
 
 	#Cleanup
 	cleanup
