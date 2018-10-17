@@ -72,7 +72,7 @@ function cleanup() {
 	fi
 
 	if [ -f "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz" ]; then
-		"$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
+		rm "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
 	fi
 
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
@@ -192,7 +192,7 @@ function configureAndInstall() {
 		mkdir /usr/local/share/grafana
 	fi
 
-	cp -r "$GOPATH/src/github.com/grafana/grafana/*" /usr/local/share/grafana
+	cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
 	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
 
 	#Add grafana config
