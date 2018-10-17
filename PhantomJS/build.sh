@@ -7,12 +7,14 @@ set -e
 PACKAGE_NAME="phantomjs"
 PACKAGE_VERSION="2.1.1"
 CURDIR="$(pwd)"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
 CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
 
 trap "" 1 2 ERR
+
+mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it  doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
