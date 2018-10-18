@@ -55,7 +55,7 @@ function prepare() {
 
 function cleanup() {
 
-	Check if Protobuf directory exists
+	#Check if Protobuf directory exists
 	if [ -d "$BUILD_DIR/protobuf" ]; then
 		rm -rf "$BUILD_DIR/protobuf"
 	fi
@@ -94,10 +94,11 @@ function configureAndInstall() {
 	cd protobuf
 	git config --global url."git://github.com/".insteadOf "https://github.com/"
 	git submodule update --init --recursive
+    printf -- 'Git clone protobuf success \n' | tee -a "$LOG_FILE"
 
 	./autogen.sh
 	./configure
-	make && make check
+	make
 
 	sudo make install
 	sudo ldconfig
