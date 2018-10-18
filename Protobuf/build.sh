@@ -94,7 +94,7 @@ function configureAndInstall() {
 	cd protobuf
 	git config --global url."git://github.com/".insteadOf "https://github.com/"
 	git submodule update --init --recursive
-    printf -- 'Git clone protobuf success \n' | tee -a "$LOG_FILE"
+	printf -- 'Git clone protobuf success \n' | tee -a "$LOG_FILE"
 
 	./autogen.sh
 	./configure
@@ -185,9 +185,11 @@ case "$DISTRO" in
 	if [[ "$DISTRO" == "rhel-6.x" ]]; then
 		sudo yum install -y -q tar wget gcc-c++ make git bzip2 curl unzip zlib zlib-devel bison binutils-devel autoconf automake libtool >/dev/null
 		printf -- "Installing for %s \\n" "$DISTRO" | tee -a "$LOG_FILE"
+	else
+
+		sudo yum install -y -q tar wget autoconf libtool automake gcc-c++ make git bzip2 curl unzip zlib zlib-devel curl >/dev/null
 	fi
 
-	sudo yum install -y -q tar wget autoconf libtool automake gcc-c++ make git bzip2 curl unzip zlib zlib-devel curl >/dev/null
 	configureAndInstall
 	;;
 
