@@ -1,0 +1,17 @@
+@@ -989,6 +989,13 @@ def test_load_verify_cadata(self):
+
+     def test_load_dh_params(self):
++        filename = u'dhparam.pem'
++        fs_encoding = sys.getfilesystemencoding()
++        try:
++            filename.encode(fs_encoding)
++        except UnicodeEncodeError:
++            self.skipTest("filename %r cannot be encoded to the filesystem encoding %r" % (filename, fs_encoding))
++
+         ctx = ssl.SSLContext(ssl.PROTOCOL_TLSv1)
+		 
+@@ -1001,7 +1008,7 @@ def test_load_dh_params(self):
+         with support.temp_dir() as d:
+-            fname = os.path.join(d, u'dhpäräm.pem')
++            fname = os.path.join(d, filename)
+             shutil.copy(DHFILE, fname)
