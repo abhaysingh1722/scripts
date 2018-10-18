@@ -121,9 +121,9 @@ function logDetails() {
 	printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
 	if [ -f "/etc/os-release" ]; then
 		cat "/etc/os-release" >>"$LOG_FILE"
-		else
-	cat "/etc/redhat-release" >>"${LOG_FILE}"
-fi
+	else
+		cat "/etc/redhat-release" >>"${LOG_FILE}"
+	fi
 
 	cat /proc/version >>"$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
