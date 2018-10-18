@@ -13,7 +13,7 @@ OVERRIDE=false
 trap "" 1 2 ERR
 
 #Check if directory exsists
-if [ ! -d "logs" ];then
+if [ ! -d "logs" ]; then
    mkdir -p "logs/"
 fi
 
