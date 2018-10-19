@@ -13,6 +13,7 @@ GO_INSTALL_URL="https://raw.githubusercontent.com/sid226/scripts/master/Go/build
 # Update URL with master repo
 PHANTOMJS_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/build.sh"
 FORCE="false"
+TESTS="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 # Update URL with master repo
@@ -20,7 +21,10 @@ GRAFANA_CONFIG_URL="https://raw.githubusercontent.com/sid226/scripts/master/Graf
 
 trap cleanup 0 1 2 ERR
 
-mkdir -p "$CURDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -62,11 +66,7 @@ function prepare() {
 
 function cleanup() {
 
-	#Check if Grafana directory exists
-	if [ -d "$GOPATH/src/github.com/grafana" ]; then
-		rm -rf "$GOPATH/src/github.com/grafana"
-	fi
-
+	
 	if [ -f /opt/yarn-v1.3.2.tar.gz ]; then
 		rm /opt/yarn-v1.3.2.tar.gz
 	fi
@@ -207,6 +207,9 @@ function configureAndInstall() {
 	#Create alias
 	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >> ~/.bashrc
     
+	# Run Tests
+	runTest
+
 	#Cleanup
 	cleanup
 
@@ -217,6 +220,24 @@ function configureAndInstall() {
 		printf -- "Error while installing %s, exiting with 127 \\n" "$PACKAGE_NAME"
 		exit 127
 	fi
+}
+
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+
+		cd "$GOPATH/src/github.com/grafana/grafana"
+		# Test backend 
+		make test-go
+
+		# Test frontend
+		make test-js
+
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+
+	fi
+	set -e
 }
 
 function logDetails() {
@@ -236,12 +257,12 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install-with-tests]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -256,6 +277,9 @@ while getopts "h?dyv:" opt; do
 	y)
 		FORCE="true"
 		;;
+	t)
+		TESTS="true"
+		;;	
 	esac
 done
 
