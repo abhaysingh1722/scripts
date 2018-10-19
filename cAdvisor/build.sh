@@ -113,7 +113,7 @@ function configureAndInstall() {
 
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
-	godep go build .
+	"${GOPATH}"/bin/godep go build .
 
 	# Add cadvisor to /usr/bin
 	cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor" /usr/bin/
@@ -170,7 +170,7 @@ function printHelp() {
 	echo
 }
 
-while getopts "h?dyv:t" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -192,14 +192,14 @@ while getopts "h?dyv:t" opt; do
 done
 
 function printSummary() {
-	printf -- '\n***************************************************************************************\n'
+	printf -- '\n***********************************************************************************************\n'
 	printf -- "Getting Started: \n"
 	printf -- "To run Cadvisor , run the following command : \n"
 	printf -- "    cadvisor &   (Run in background)  \n"
 	printf -- "    cadvisor -logtostderr  (Foreground with console logs)  \n\n"
 	printf -- "\nAccess cAdvisor UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 8080] \n"
-	printf -- '***************************************************************************************\n'
+	printf -- '*************************************************************************************************\n'
 	printf -- '\n'
 }
 
