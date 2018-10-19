@@ -44,7 +44,7 @@ function prepare() {
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
 		printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n"
