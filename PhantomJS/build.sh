@@ -11,7 +11,7 @@ LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log
 FORCE="false"
 BUILD_DIR="/usr/local"
 CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
-
+TESTS="false"
 trap "" 1 2 ERR
 
 mkdir -p "$CURDIR/logs/"
@@ -60,7 +60,6 @@ function cleanup() {
 	rm -rf "${BUILD_DIR}/openssl"
 	rm -rf "${BUILD_DIR}/curl"
 	rm -rf "${BUILD_DIR}/curl/mk-ca-bundle.pl"
-	rm -rf "${BUILD_DIR}/phantomjs"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 
 }
@@ -126,6 +125,9 @@ function configureAndInstall() {
 	cp "${BUILD_DIR}/phantomjs/bin/phantomjs" /usr/bin/
 	printf -- 'Add Phantomjs to /usr/bin success \n' >>"$LOG_FILE"
 
+	# Run Tests
+	runTest
+
 	#Clean up
 	cleanup
 
@@ -136,6 +138,21 @@ function configureAndInstall() {
 		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
 		exit 127
 	fi
+}
+
+
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+
+		cd "${BUILD_DIR}/phantomjs/test"
+		python run-tests.py
+
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+
+	fi
+	set -e
 }
 
 function logDetails() {
@@ -161,7 +178,7 @@ function printHelp() {
 	echo
 }
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -176,6 +193,9 @@ while getopts "h?dyv:" opt; do
 	y)
 		FORCE="true"
 		;;
+	t)
+		TESTS="true"
+		;;	
 	esac
 done
 
