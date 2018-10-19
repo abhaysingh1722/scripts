@@ -129,7 +129,7 @@ function configureAndInstall() {
 		printf -- "Removing Existing grafana Directory at GOPATH"
 		rm -rf "$GOPATH/src/github.com/grafana/grafana"
 	fi
-	git clone -q -b v5.2.4 https://github.com/grafana/grafana.git
+	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
 	cd grafana
