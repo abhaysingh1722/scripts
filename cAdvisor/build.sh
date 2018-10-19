@@ -63,7 +63,6 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${GOPATH}/src/github.com/google/cadvisor"
 	rm -rf "${CURDIR}/patch.diff"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
@@ -113,7 +112,7 @@ function configureAndInstall() {
 
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
-	${GOPATH}/bin/godep go build .
+	"${GOPATH}"/bin/godep go build .
 
 	# Add cadvisor to /usr/bin
 	cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor" /usr/bin/
