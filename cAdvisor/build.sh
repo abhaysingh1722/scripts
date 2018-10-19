@@ -9,8 +9,8 @@ PACKAGE_VERSION="0.27.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
 
-GO_INSTALL_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/Go/build.sh"
-REPO_URL="https://raw.githubusercontent.com/linux-on-ibm-z/scripts/master/cAdvisor/patch"
+GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
+REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/cAdvisor/patch"
 
 FORCE="false"
 TESTS="false"
