@@ -14,7 +14,10 @@ CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patc
 TESTS="false"
 trap "" 1 2 ERR
 
-mkdir -p "$CURDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it  doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -173,7 +176,7 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install-with-tests]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
@@ -195,7 +198,7 @@ while getopts "h?dytv:" opt; do
 		;;
 	t)
 		TESTS="true"
-		;;	
+		;;
 	esac
 done
 
