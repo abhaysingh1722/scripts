@@ -62,47 +62,45 @@ function cleanup() {
 
 function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n' | tee -a "${LOG_FILE}"
-
 	
 	#Downloading Source code
 	cd "${CURDIR}"
-    wget -q https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tar.xz 
+    	wget -q https://www.python.org/ftp/python/2.7.15/Python-2.7.15.tar.xz 
 	tar -xvf Python-2.7.15.tar.xz
     
-    #Applying Patch to fix test_ssl
-    printf -- "\nApplying patch file">>"${LOG_FILE}"
-    cd Python-2.7.15/Lib/test/
-    wget -q https://raw.githubusercontent.com/kapilshirodkar07/scripts/master/Python%202.7.x/patch/test_ssl.patch > /Python-2.7.15/Lib/test/test_ssl.patch
-    patch test_ssl.py < test_ssl.patch
-    printf -- "\nPATCH added \n">>"${LOG_FILE}" 
+    	#Applying Patch to fix test_ssl
+    	printf -- "\nApplying patch file">>"${LOG_FILE}"
+    	cd Python-2.7.15/Lib/test/
+    	wget -q https://raw.githubusercontent.com/kapilshirodkar07/scripts/master/Python%202.7.x/patch/test_ssl.patch > /Python-2.7.15/Lib/test/test_ssl.patch
+    	patch test_ssl.py < test_ssl.patch
+    	printf -- "\nPATCH added \n">>"${LOG_FILE}" 
 
-    #symlink for ncurses header (ONLY FOR SLES)
-    if [[ "$ID" == "sles" ]]; then
-        sudo ln -sfv /usr/include/ncurses/* /usr/include/
-    fi
+    	#symlink for ncurses header (ONLY FOR SLES)
+    	if [[ "$ID" == "sles" ]]; then
+	sudo ln -sfv /usr/include/ncurses/* /usr/include/
+    	fi
 
-    #Configure and Build
-    cd $CURDIR/Python-2.7.15
-    ./configure --prefix=/usr/local --exec-prefix=/usr/local
+    	#Configure and Build
+    	cd $CURDIR/Python-2.7.15
+    	./configure --prefix=/usr/local --exec-prefix=/usr/local
 	 make > /dev/null
 
-    #Install binaries
-    sudo make install > /dev/null
+    	#Install binaries
+    	sudo make install > /dev/null
 
-    export PATH="/usr/local/bin:${PATH}"
+    	export PATH="/usr/local/bin:${PATH}"
+	printf -- '\nInstalled python successfully \n' >>"${LOG_FILE}"
 
-    printf -- '\nInstalled python successfully \n' >>"${LOG_FILE}"
+    	#Cleanup
+    	cleanup
 
-    #Cleanup
-    cleanup
-
-    #Verify python installation
-    if command -V "$PACKAGE_NAME" >/dev/null; then
-      printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
-    else
-      printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
-      exit 127
-    fi
+    	#Verify python installation
+    	if command -V "$PACKAGE_NAME" >/dev/null; then
+      		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+    	else
+      		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
+      		exit 127
+    	fi
 }
 
 function logDetails() {
@@ -161,16 +159,16 @@ prepare
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04")
-	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-    sudo apt-get update > /dev/null
-    sudo apt-get install -y -qq gcc g++ make libncurses5-dev libreadline6-dev libssl-dev libgdbm-dev libc6-dev libsqlite3-dev libbz2-dev xz-utils wget tar curl bzip2 zlib1g-dev libdb1-compat libdb-dev tk8.5-dev gdb patch >/dev/null
-	configureAndInstall
-	;;
+    	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
+    	sudo apt-get update > /dev/null
+    	sudo apt-get install -y -qq gcc g++ make libncurses5-dev libreadline6-dev libssl-dev libgdbm-dev libc6-dev libsqlite3-dev libbz2-dev xz-utils wget tar curl bzip2 zlib1g-dev libdb1-compat libdb-dev tk8.5-dev gdb patch >/dev/null
+    	configureAndInstall
+    	;;
 "ubuntu-18.04")
-    printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
-    apt-get install -y -qq python > /dev/null
-    printf -- "Installation Sucessfull.. \n Binary Exsisted for ubuntu-18.04 \n\n" >> "$LOG_FILE";
-    ;;
+    	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
+    	apt-get install -y -qq python > /dev/null
+    	printf -- "Installation Sucessfull.. \n Binary Exsisted for ubuntu-18.04 \n\n" >> "$LOG_FILE";
+    	;;
 
 "rhel-6.10")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "${LOG_FILE}"
