@@ -63,7 +63,6 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${GOPATH}/src/github.com/google/cadvisor"
 	rm -rf "${CURDIR}/patch.diff"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
@@ -102,7 +101,7 @@ function configureAndInstall() {
 	# Checkout the code from repository
 	mkdir -p "${GOPATH}/src/github.com/google"
 	cd "${GOPATH}/src/github.com/google"
-	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >>"${LOG_FILE}"
+	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >> "${LOG_FILE}"
 	printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
 
 	cd "${CURDIR}"
