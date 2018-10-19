@@ -170,7 +170,7 @@ function printHelp() {
 	echo
 }
 
-while getopts "h?dyv:t" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
