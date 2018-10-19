@@ -84,10 +84,10 @@ function configureAndInstall() {
     #Configure and Build
     cd $CURDIR/Python-2.7.15
     ./configure --prefix=/usr/local --exec-prefix=/usr/local
-	  make > /dev/null
+	 make > /dev/null
 
     #Install binaries
-	  sudo make install > /dev/null
+    sudo make install > /dev/null
 
     export PATH="/usr/local/bin:${PATH}"
 
