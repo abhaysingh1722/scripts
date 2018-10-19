@@ -32,9 +32,9 @@ function checkPrequisites()
 {
   if command -v "sudo" > /dev/null ;
   then
-    printf -- 'Sudo : Yes\n';
+    printf -- 'Sudo : Yes\n' >> "$LOG_FILE" 
   else
-    printf -- 'Sudo : No \n';
+    printf -- 'Sudo : No \n' >> "$LOG_FILE"  
     printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;

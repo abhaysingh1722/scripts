@@ -47,7 +47,7 @@ function prepare() {
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n"
+		printf -- "\nAs part of the installation , Go 1.10.1 will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -113,7 +113,7 @@ function configureAndInstall() {
 
 	# Build cAdvisor
 	cd "${GOPATH}/src/github.com/google/cadvisor"
-	godep go build .
+	${GOPATH}/bin/godep go build .
 
 	# Add cadvisor to /usr/bin
 	cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor" /usr/bin/
