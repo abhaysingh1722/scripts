@@ -6,7 +6,7 @@ PACKAGE_NAME="etcd"
 PACKAGE_VERSION="3.3.8"
 CURDIR="$(pwd)"
 GO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
-CONFIG_etcd="https://raw.githubusercontent.com/kapilshirodkar07/scripts/master/etcd/conf/etcd.conf.yml"
+CONFIG_ETCD="https://raw.githubusercontent.com/imdurgadas/scripts/master/etcd/conf/etcd.conf.yml"
 FORCE="false"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 trap cleanup 0 1 2 ERR
@@ -14,7 +14,7 @@ trap cleanup 0 1 2 ERR
 mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
-if [ -f "/etc/os-release" ];then
+if [ -f "/etc/os-release" ]; then
     source "/etc/os-release"
 else
     cat /etc/redhat-release >> "${LOG_FILE}"
@@ -137,7 +137,7 @@ function configureAndInstall() {
         mkdir /etc/etcd/
     fi
 
-    curl $CONFIG_etcd > /etc/etcd/etcd.conf.yml
+    curl $CONFIG_ETCD > /etc/etcd/etcd.conf.yml
     printf -- "Added etcd.conf.yml in /etc/etcd \n" >> "$LOG_FILE"
             
     # Add etcd to /usr/bin
