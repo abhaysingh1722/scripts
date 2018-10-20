@@ -54,7 +54,7 @@ function checkPrequisites()
 
 function cleanup()
 {
-  rm -rf go1.10.1.linux-s390x.tar.gz
+  rm -rf go1.10.1.linux-s390x.tar.gz*
   printf -- 'Cleaned up the artifacts\n'  >> "$LOG_FILE"
 }
 

@@ -131,7 +131,7 @@ function configureAndInstall() {
 
     #Get a etcd.conf.yml in etc/prometheus/
     if [ ! -d /etc/etcd ];then
-        mkdir /etc/etcd/
+        sudo mkdir /etc/etcd/
     fi
 
     curl $CONFIG_ETCD > /etc/etcd/etcd.conf.yml
