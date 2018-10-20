@@ -44,7 +44,7 @@ function prepare() {
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
 		printf -- "\nAs part of the installation , Go 1.10.1 will be installed, \n"
@@ -101,7 +101,7 @@ function configureAndInstall() {
 	# Checkout the code from repository
 	mkdir -p "${GOPATH}/src/github.com/google"
 	cd "${GOPATH}/src/github.com/google"
-	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >>"${LOG_FILE}"
+	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >> "${LOG_FILE}"
 	printf -- 'Cloned the cadvisor code \n' >>"$LOG_FILE"
 
 	cd "${CURDIR}"
@@ -191,14 +191,14 @@ while getopts "h?dytv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\n***************************************************************************************\n'
+	printf -- '\n***********************************************************************************************\n'
 	printf -- "Getting Started: \n"
 	printf -- "To run Cadvisor , run the following command : \n"
 	printf -- "    cadvisor &   (Run in background)  \n"
 	printf -- "    cadvisor -logtostderr  (Foreground with console logs)  \n\n"
 	printf -- "\nAccess cAdvisor UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 8080] \n"
-	printf -- '***************************************************************************************\n'
+	printf -- '*************************************************************************************************\n'
 	printf -- '\n'
 }
 

@@ -10,10 +10,13 @@ CURDIR="$(pwd)"
 FORCE="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
-
+TESTS="false"
 trap cleanup 0 1 2 ERR
 
-mkdir -p "$CURDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -90,7 +93,7 @@ function configureAndInstall() {
 	fi
 
 	cd "$BUILD_DIR"
-	git clone -q -b v3.6.1 git://github.com/google/protobuf.git
+	git clone -q -b v"${PACKAGE_VERSION}" git://github.com/google/protobuf.git
 	cd protobuf
 	git config --global url."git://github.com/".insteadOf "https://github.com/"
 	git submodule update --init --recursive
@@ -100,11 +103,16 @@ function configureAndInstall() {
 	./configure
 	make
 
+	# Run Tests
+	runTest
+
 	sudo make install
 	sudo ldconfig
 	export LD_LIBRARY_PATH=/usr/local/lib
 	printf -- 'Build protobuf success \n' | tee -a "$LOG_FILE"
 
+	
+	
 	#Cleanup
 	cleanup
 
@@ -115,6 +123,21 @@ function configureAndInstall() {
 		printf -- "Error while installing %s, exiting with 127 \\n" "$PACKAGE_NAME"
 		exit 127
 	fi
+}
+
+
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+
+		# Test build 
+		make check
+
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+
+	fi
+	set -e
 }
 
 function logDetails() {
@@ -136,12 +159,12 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install-with-tests]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -156,6 +179,9 @@ while getopts "h?dyv:" opt; do
 	y)
 		FORCE="true"
 		;;
+	t)
+		TESTS="true"
+		;;	
 	esac
 done
 
