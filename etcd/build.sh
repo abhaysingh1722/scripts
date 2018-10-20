@@ -39,16 +39,13 @@ function prepare() {
         printf -- "Go : Yes \n";
     else
         printf -- "Go : No \n";
-        printf -- "This setup includes installation of Go.\n";
     fi
 
     if command -v $PACKAGE_NAME > /dev/null;
     then
         printf -- "%s : Yes \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
-        printf -- "\nYou already have the package installed on ur system.\n"
     else
         printf -- "%s : No \n" "$PACKAGE_NAME" ;
-        printf -- 'Package not present on system \n\n'
     fi;
 
     if [[ "$FORCE" == "true" ]] ;
@@ -56,11 +53,11 @@ function prepare() {
         printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
     else
         # Ask user for prerequisite installation
-        printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
+        printf -- "\nAs part of the installation , Go 1.10.1 will be installed, \n";
         while true; do
 		    read -r -p "Do you want to continue (y/n) ? :  " yn
 		    case $yn in
-  	 		    [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+  	 		    [Yy]* ) printf -- 'User responded with Yes. \n' >> "$LOG_FILE"; 
 	                    break;;
     		    [Nn]* ) exit;;
     		    *) 	echo "Please provide confirmation to proceed.";;
