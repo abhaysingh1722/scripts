@@ -32,7 +32,7 @@ fi
 function prepare() {
 
 	if [[ "${TEST_USER}" == "root" ]]; then
-		printf -- 'Cannot run Elasticsearch as root. Please use a standard user\n\n\n' | tee -a "$LOG_FILE"
+		printf -- 'Cannot run Elasticsearch as root. Please use a standard user\n\n' | tee -a "$LOG_FILE"
 		exit 1
 	fi
 
@@ -45,11 +45,11 @@ function prepare() {
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
 	else
-		printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
+		printf -- 'Following packages are needed before going ahead\n' | tee -a "$LOG_FILE"
 		printf -- 'AdoptOpenJDK 10\t\tVersion: jdk-10.0.2+13\n\n' | tee -a "$LOG_FILE"
-		printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+		printf -- 'Build might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -231,14 +231,18 @@ while getopts "h?dyv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\n\nSet JAVA_HOME to start using elasticsearch right away.' | tee -a "$LOG_FILE"
-	printf -- '\nJAVA_HOME=/usr/local/jdk-10.0.2+13/\n' | tee -a "$LOG_FILE"
-	printf -- '\nOr restart the session to Configure the changes automatically' | tee -a "$LOG_FILE"
+	printf -- '\n********************************************************************************************************\n'
+    printf -- "\n* Getting Started * \n" 
+	printf -- '\n\n Set JAVA_HOME to start using elasticsearch right away.' | tee -a "$LOG_FILE"
+	printf -- '\n    export JAVA_HOME=/usr/local/jdk-10.0.2+13/\n' | tee -a "$LOG_FILE"
+	printf -- '\n Restarting the session will apply changes automatically' | tee -a "$LOG_FILE"
+	printf -- '\n\n Start Elasticsearch using the following command :   elasticsearch ' | tee -a "$LOG_FILE"
 	printf -- '\nFor more information on curator client visit https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html \n\n' | tee -a "$LOG_FILE"
+	printf -- '**********************************************************************************************************\n'
+
 }
 
 logDetails
-#checkPrequisites
 prepare
 
 DISTRO="$ID-$VERSION_ID"
