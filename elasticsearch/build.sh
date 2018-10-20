@@ -170,16 +170,16 @@ function startService() {
 function installClient() {
 	printf -- '\nInstalling curator client\n' | tee -a "$LOG_FILE"
 	if [[ "${ID}" == "sles" ]]; then
-		sudo zypper install -y -q python-pip python-devel > /dev/null
+		sudo zypper -q install -y python-pip python-devel > /dev/null
 	fi
 
 	if [[ "${ID}" == "ubuntu" ]]; then
 		sudo apt-get update > /dev/null
-		sudo apt-get install -y python-pip > /dev/null
+		sudo apt-get install -y -qq python-pip > /dev/null
 	fi
 
 	if [[ "${ID}" == "rhel" ]]; then
-		sudo yum install -y python-setuptools > /dev/null
+		sudo yum install -y -q python-setuptools > /dev/null
 		sudo easy_install pip > /dev/null
 	fi
 
