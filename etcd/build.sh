@@ -134,11 +134,11 @@ function configureAndInstall() {
         sudo mkdir /etc/etcd/
     fi
 
-    curl $CONFIG_ETCD > /etc/etcd/etcd.conf.yml
+    sudo curl $CONFIG_ETCD > /etc/etcd/etcd.conf.yml
     printf -- "Added etcd.conf.yml in /etc/etcd \n" >> "$LOG_FILE"
             
     # Add etcd to /usr/bin
-    cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
+    sudo cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
     printf -- 'Build etcd successfully \n' >>"$LOG_FILE"
 
     cleanup
