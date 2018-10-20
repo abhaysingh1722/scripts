@@ -75,7 +75,7 @@ function configureAndInstall()
   #sudo rm -rf /usr/local/go
   sudo tar -C /usr/local -xzf go"${PACKAGE_VERSION}".linux-s390x.tar.gz
 
-  ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  sudo ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
   printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
 
   if [[ "${ID}" != "ubuntu" ]]
