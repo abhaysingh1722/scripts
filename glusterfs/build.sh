@@ -26,35 +26,26 @@ else
 	export VERSION_ID="6.x"
 	export PRETTY_NAME="Red Hat Enterprise Linux 6.x"
 fi
+
 function prepare() {
 
 	if [[ "${TEST_USER}" != "root" ]]; then
-		printf -- 'Cannot run GlusterFS as non-root . Please switch to superuser\n\n\n' | tee -a "$LOG_FILE"
-		exit 1
-	fi
-
-	if command -v "sudo" >/dev/null; then
-		printf -- 'Sudo : Yes\n' >>"$LOG_FILE"
-	else
-		printf -- 'Sudo : No \n' >>"$LOG_FILE"
-		printf -- 'sudo not found\n'
-		printf -- 'You can install the same from repository using apt, yum or zypper based on your distro. \n'
+		printf -- 'Cannot run GlusterFS as non-root . Please switch to superuser \n' | tee -a "$LOG_FILE"
 		exit 1
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
 	else
 		if [[ "${ID}" != "ubuntu" ]]; then
 			printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
-			printf -- 'URCU\n\n' | tee -a "$LOG_FILE"
-			printf -- 'Thin-provisioning-tools\n\n' | tee -a "$LOG_FILE"
-			printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+			printf -- 'URCU\n' | tee -a "$LOG_FILE"
+			printf -- 'Thin-provisioning-tools\n' | tee -a "$LOG_FILE"
+			printf -- '\nBuild might take some time, please have patience . \n' | tee -a "$LOG_FILE"
 			while true; do
 				read -r -p "Do you want to continue (y/n) ? :  " yn
 				case $yn in
 				[Yy]*)
-
 					break
 					;;
 				[Nn]*) exit ;;
@@ -119,8 +110,6 @@ function configureAndInstall() {
 		make --silent install
 		printf -- 'thin-provisioning-tools installed\n' | tee -a "$LOG_FILE"
 	fi
-	
-	
 
 	cd "${CURDIR}"
 
@@ -149,7 +138,7 @@ function configureAndInstall() {
 
 	#Build GlusterFS
 	printf -- '\nBuilding GlusterFS \n' | tee -a "$LOG_FILE"
-	printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+	printf -- '\nBuild might take some time...........\n' | tee -a "$LOG_FILE"
 	cd "${CURDIR}/glusterfs"
 	make --silent
 	make --silent install
@@ -166,8 +155,6 @@ function configureAndInstall() {
 	else
 		echo "export LD_LIBRARY_PATH=/usr/local/lib" >>.bashrc
 	fi
-
-
 }
 
 function logDetails() {
@@ -209,9 +196,11 @@ while getopts "h?dyv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\n\nSet LD_LIBRARY_PATH to start using GlusterFS right away.' | tee -a "$LOG_FILE"
-	printf -- "\nLD_LIBRARY_PATH=/usr/local/lib:%s \n" "$LD_LIBRARY_PATH" | tee -a "$LOG_FILE"
-	printf -- '\nOr restart the session to Configure the changes automatically' | tee -a "$LOG_FILE"
+	printf -- '\n********************************************************************************************************\n'
+    printf -- "\n* Getting Started * \n" 
+	printf -- '\n Set LD_LIBRARY_PATH to start using GlusterFS right away.' | tee -a "$LOG_FILE"
+	printf -- "\n     export LD_LIBRARY_PATH=/usr/local/lib:%s \n" "$LD_LIBRARY_PATH" | tee -a "$LOG_FILE"
+	printf -- '\n OR Restart the session to apply the changes' | tee -a "$LOG_FILE"
 	printf -- '\nFor more information on GlusterFS visit https://www.gluster.org/ \n\n' | tee -a "$LOG_FILE"
 }
 
