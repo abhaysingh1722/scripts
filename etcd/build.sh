@@ -220,20 +220,20 @@ case "$DISTRO" in
     "ubuntu-16.04" | "ubuntu-18.04")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
         printf -- "Installing dependencies... it may take some time.\n"
-        sudo apt-get update | tee -a "$LOG_FILE"
-        sudo apt-get install -qq git curl wget tar gcc | tee -a "$LOG_FILE"
+        sudo apt-get update > /dev/null
+        sudo apt-get install -qq git curl wget tar gcc >/dev/null
         configureAndInstall
         ;;
     "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
         printf -- "Installing dependencies... it may take some time.\n"
-        sudo yum install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
+        sudo yum install -y -q curl git wget tar gcc which >/dev/null
         configureAndInstall
         ;;
     "sles-12.3" | "sles-15")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
         printf -- "Installing dependencies... it may take some time.\n"
-        sudo zypper install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
+        sudo zypper install -y -q curl git wget tar gcc which >/dev/null
         configureAndInstall
         ;;
     *)
