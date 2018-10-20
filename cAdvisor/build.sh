@@ -102,6 +102,10 @@ function configureAndInstall() {
 	if [ ! -d "${GOPATH}/src/github.com/google" ]; then
 		mkdir -p "${GOPATH}/src/github.com/google"
 	fi
+	
+	#Remove so that there is no conflict while doing clone on subsequent tries.
+	rm -rf "${GOPATH}/src/github.com/google/cadvisor" 
+
 
 	cd "${GOPATH}/src/github.com/google"
 	git clone -b "v${PACKAGE_VERSION}" -q https://github.com/google/cadvisor.git >> "${LOG_FILE}"
