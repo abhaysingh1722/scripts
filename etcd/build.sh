@@ -134,7 +134,7 @@ function configureAndInstall() {
         sudo mkdir /etc/etcd/
     fi
 
-    sudo curl $CONFIG_ETCD > /etc/etcd/etcd.conf.yml
+    curl $CONFIG_ETCD | sudo tee /etc/etcd/etcd.conf.yml
     printf -- "Added etcd.conf.yml in /etc/etcd \n" >> "$LOG_FILE"
             
     # Add etcd to /usr/bin
@@ -190,7 +190,6 @@ while getopts "h?dyv:" opt; do
         ;;
     y)
         FORCE="true"
-        exit 0
         ;;
     esac
 done
