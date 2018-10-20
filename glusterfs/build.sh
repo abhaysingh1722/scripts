@@ -7,7 +7,7 @@ set -e
 PACKAGE_NAME="glusterfs"
 PACKAGE_VERSION="4.0.2"
 CURDIR="$(pwd)"
-REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/glusterfs/patch"
+REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/glusterfs/patch"
 GLUSTER_REPO_URL="https://github.com/gluster/glusterfs"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"

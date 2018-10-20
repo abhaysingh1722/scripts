@@ -7,7 +7,7 @@ set -e
 PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
-REPO_URL="https://raw.githubusercontent.com/prankkelkar/scripts/master/elasticsearch/patch"
+REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"

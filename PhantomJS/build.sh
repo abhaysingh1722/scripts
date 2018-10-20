@@ -10,7 +10,7 @@ CURDIR="$(pwd)"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
-CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
+CONF_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/patch"
 TESTS="false"
 trap "" 1 2 ERR
 

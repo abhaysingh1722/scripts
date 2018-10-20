@@ -8,16 +8,16 @@ PACKAGE_NAME="grafana"
 PACKAGE_VERSION="5.2.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
-# Update URL with master repo
-GO_INSTALL_URL="https://raw.githubusercontent.com/sid226/scripts/master/Go/build.sh"
-# Update URL with master repo
+
+GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
 PHANTOMJS_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/build.sh"
+GRAFANA_CONFIG_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Grafana/conf/grafana.ini"
+
 FORCE="false"
 TESTS="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
-# Update URL with master repo
-GRAFANA_CONFIG_URL="https://raw.githubusercontent.com/sid226/scripts/master/Grafana/conf/grafana.ini"
+
 
 trap cleanup 0 1 2 ERR
 
