@@ -50,7 +50,7 @@ function prepare() {
 
     if [[ "$FORCE" == "true" ]] ;
     then
-        printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+        printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
     else
         # Ask user for prerequisite installation
         printf -- "\nAs part of the installation , Go 1.10.1 will be installed, \n";
@@ -226,13 +226,13 @@ case "$DISTRO" in
         ;;
     "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        printf -- "Installing dependencies... it may take some time."
+        printf -- "Installing dependencies... it may take some time.\n"
         sudo yum install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
         configureAndInstall
         ;;
     "sles-12.3" | "sles-15")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        printf -- "Installing dependencies... it may take some time."
+        printf -- "Installing dependencies... it may take some time.\n"
         sudo zypper install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
         configureAndInstall
         ;;

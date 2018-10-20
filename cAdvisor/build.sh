@@ -72,7 +72,7 @@ function configureAndInstall() {
 
 	# Install go
 	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-	curl -s $GO_INSTALL_URL | bash
+	curl -s $GO_INSTALL_URL | sudo bash
 
 	# Install cAdvisor
 	printf -- '\nInstalling cAdvisor..... \n'
