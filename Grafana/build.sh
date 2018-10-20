@@ -99,7 +99,7 @@ function configureAndInstall() {
 
 	# Install go
 	printf -- "Installing Go... \\n" | tee -a "$LOG_FILE"
-	curl -s $GO_INSTALL_URL | bash
+	curl -s $GO_INSTALL_URL | sudo bash
 
 	# Set GOPATH if not already set
 	if [[ -z "${GOPATH}" ]]; then
@@ -133,7 +133,6 @@ function configureAndInstall() {
 
 	printf -- "Created grafana Directory at 1"
 	cd grafana
-	printf -- "Created grafana Directory at 2"
 	make deps-go
 	make build-go
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"

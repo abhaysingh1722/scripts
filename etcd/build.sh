@@ -78,7 +78,7 @@ function configureAndInstall() {
     
     #GO Installation
     printf -- "\n\n Installing Go \n" | tee -a "$LOG_FILE"
-    curl $GO_URL | bash
+    curl $GO_URL | sudo bash
     
     # Install etcd
     printf -- 'Installing etcd..... \n'
@@ -220,7 +220,7 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
     "ubuntu-16.04" | "ubuntu-18.04")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        printf -- "Installing dependencies... it may take some time."
+        printf -- "Installing dependencies... it may take some time.\n"
         sudo apt-get update | tee -a "$LOG_FILE"
         sudo apt-get install -qq git curl wget tar gcc | tee -a "$LOG_FILE"
         configureAndInstall
