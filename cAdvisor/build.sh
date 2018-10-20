@@ -115,7 +115,7 @@ function configureAndInstall() {
 	"${GOPATH}"/bin/godep go build .
 
 	# Add cadvisor to /usr/bin
-	cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor" /usr/bin/
+	sudo cp "${GOPATH}/src/github.com/google/cadvisor/cadvisor" /usr/bin/
 	printf -- 'Build cAdvisor successfully \n' >>"$LOG_FILE"
 
 	# Run Tests
