@@ -197,20 +197,20 @@ done
 
 
 function printSummary() {
-    printf -- '\n***************************************************************************************\n'
-    printf -- "\n\n* Getting Started * \n"
-    printf -- "\nRunning etcd: \n"
+    printf -- '\n********************************************************************************************************\n'
+    printf -- "\n* Getting Started * \n"
+    printf -- "Running etcd: \n"
     printf -- " etcd  \n\n"
-    printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x, set following\n"
-    printf -- "\nexport ETCD_UNSUPPORTED_ARCH=s390x \n"
-    printf -- "\nThis will bring up etcd listening on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
-    printf -- "Next, let's set a single key, and then retrieve it:"
+    printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x , set following\n"
+    printf -- "            export ETCD_UNSUPPORTED_ARCH=s390x \n"
+    printf -- "etcd will listen on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
+    printf -- "Next, let's set a single key, and then retrieve it:\n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
     printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
     printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml \n"
     printf -- "You have successfully started etcd and written a key to the store.\n"
-    printf -- '***************************************************************************************\n'
+    printf -- '**********************************************************************************************************\n'
 }
     
 logDetails
@@ -220,18 +220,21 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
     "ubuntu-16.04" | "ubuntu-18.04")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo apt-get update
-        sudo apt-get install -qq git curl wget tar gcc > /dev/null
+        printf -- "Installing dependencies... it may take some time."
+        sudo apt-get update | tee -a "$LOG_FILE"
+        sudo apt-get install -qq git curl wget tar gcc | tee -a "$LOG_FILE"
         configureAndInstall
         ;;
     "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo yum install -y -q curl git wget tar gcc which > /dev/null
+        printf -- "Installing dependencies... it may take some time."
+        sudo yum install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
         configureAndInstall
         ;;
     "sles-12.3" | "sles-15")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo zypper install -y -q curl git wget tar gcc which
+        printf -- "Installing dependencies... it may take some time."
+        sudo zypper install -y -q curl git wget tar gcc which | tee -a "$LOG_FILE"
         configureAndInstall
         ;;
     *)
