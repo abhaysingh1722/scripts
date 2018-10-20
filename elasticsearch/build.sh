@@ -95,7 +95,7 @@ function configureAndInstall() {
 
 	#Added symlink for PATH
 	sudo ln -sf /usr/local/jdk-10.0.2+13/bin/java /usr/bin/
-	printf -- '\nAdding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
+	printf -- 'Adding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
 	#add JAVA_HOME to .bashrc
 	cd "${HOME}"
 	if [[ "$(grep JAVA_HOME .bashrc)" ]]; then
@@ -114,7 +114,7 @@ function configureAndInstall() {
 	printenv >>"$LOG_FILE"
 	cd "${CURDIR}"
 	# Download and configure ElasticSearch
-	printf -- '\nDownloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
+	printf -- 'Downloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
 	git clone -q -b v$PACKAGE_VERSION $ES_REPO_URL
 	sleep 2
 
@@ -127,11 +127,11 @@ function configureAndInstall() {
 	wget -q $REPO_URL/patch2.diff
 	patch "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml" patch2.diff
 
-	printf -- '\nPatch applied for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
+	printf -- 'Patch applied for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
 
 	#Build elasticsearch
-	printf -- '\nBuilding Elasticsearch \n' | tee -a "$LOG_FILE"
-	printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+	printf -- 'Building Elasticsearch \n' | tee -a "$LOG_FILE"
+	printf -- 'Build might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 	cd "${CURDIR}/elasticsearch"
 	./gradlew -q assemble
 	printf -- 'Built Elasticsearch successfully \n\n' | tee -a "$LOG_FILE"
@@ -164,7 +164,7 @@ function startService() {
 		exit 127
 	fi
 
-	printf -- '\n\nService started\n' | tee -a "$LOG_FILE"
+	printf -- 'Service started\n' | tee -a "$LOG_FILE"
 }
 
 function installClient() {
@@ -245,7 +245,7 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
+	printf -- "Installing dependencies... it may take some time.\n"
 	sudo apt-get update > /dev/null
 	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	configureAndInstall
@@ -255,7 +255,7 @@ case "$DISTRO" in
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
+	printf -- "Installing dependencies... it may take some time.\n"
 	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	configureAndInstall
 	startService
@@ -264,7 +264,7 @@ case "$DISTRO" in
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
+	printf -- "Installing dependencies... it may take some time.\n"
 	sudo zypper -q --non-interactive install tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	configureAndInstall
 	startService
@@ -277,5 +277,4 @@ case "$DISTRO" in
 	;;
 esac
 
-# Print Summary
 printSummary
