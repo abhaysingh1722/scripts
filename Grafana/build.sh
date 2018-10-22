@@ -194,6 +194,8 @@ function configureAndInstall() {
 	fi
 
 	sudo cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
+	#Give permission to user
+	sudo chown -R $USER /usr/local/share/grafana/
 	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
 
 	#Add grafana config
