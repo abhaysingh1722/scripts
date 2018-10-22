@@ -8,6 +8,7 @@ CURDIR="$(pwd)"
 GO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
 CONFIG_ETCD="https://raw.githubusercontent.com/imdurgadas/scripts/master/etcd/conf/etcd.conf.yml"
 FORCE="false"
+TESTS="false"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 trap cleanup 0 1 2 ERR
 
@@ -141,6 +142,10 @@ function configureAndInstall() {
     sudo cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
     printf -- 'Build etcd successfully \n' >>"$LOG_FILE"
 
+    #Run tests
+    runTest
+    
+    #cleanup
     cleanup
 
     #Verify etcd installation
@@ -152,7 +157,17 @@ function configureAndInstall() {
     fi
 
 }
-
+#Tests function
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+		cd "${GOPATH}/src/github.com/coreos/etcd"
+		./test
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+	fi
+	set -e
+}
 function logDetails() {
     printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
     if [ -f "/etc/os-release" ]; then
@@ -169,13 +184,13 @@ function logDetails() {
 function printHelp() {
     echo
     echo "Usage: "
-    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install and run tests]"
     echo "       default: If no -v specified, latest version will be installed"
     echo
 }
 
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dyv:t" opt; do
     case "$opt" in
     h | \?)
         printHelp
@@ -190,6 +205,9 @@ while getopts "h?dyv:" opt; do
         ;;
     y)
         FORCE="true"
+        ;;
+    t)
+        TESTS="true"
         ;;
     esac
 done
