@@ -6,9 +6,11 @@ set -e
 
 PACKAGE_NAME="logstash"
 PACKAGE_VERSION="6.4.2"
+USER="logstash"
 FORCE=false
 WORKDIR="/usr/local"
-LOG_FILE="${WORKDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+CURDIR="$(pwd)"
+LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap "" 1 2 ERR
 
@@ -51,10 +53,11 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${WORKDIR}/apache-ant-1.9.10"
-	rm -rf "${WORKDIR}/ibm-java-s390x-sdk-8.0-5.17.bin"
-	rm -rf "${WORKDIR}/installer.properties"
-	rm -rf "${WORKDIR}/jffi-jffi-1.2.16/"
+	sudo rm -rf "${WORKDIR}/apache-ant-1.9.10"
+	sudo rm -rf "${WORKDIR}/ibm-java-s390x-sdk-8.0-5.17.bin"
+	sudo rm -rf "${WORKDIR}/installer.properties"
+	sudo rm -rf "${WORKDIR}/jffi-1.2.16.zip"
+	sudo rm -rf "${WORKDIR}/logstash-6.4.2.zip"
 	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
@@ -62,15 +65,19 @@ function configureAndInstall() {
 	#cleanup
 	printf -- 'Configuration and Installation started \n' | tee -a "${LOG_FILE}"
 
+	#printf -- 'Creating logstash user \n' | tee -a "${LOG_FILE}"
+	#sudo groupadd "${USER}"
+	#sudo useradd -g "${USER}" -p "${USER}" -d "/home/${USER}" -m "${USER}"
+
 	# Install IBMSDK
 	printf -- 'Configuring IBMSDK \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
 
-	wget http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
-	wget https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
-	tail -n +3 installer.properties.java | tee installer.properties
-	cat installer.properties >>"${LOG_FILE}"
-	chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
+	sudo wget -q http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
+	sudo wget -q  https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
+	tail -n +3 installer.properties.java | sudo tee installer.properties
+	sudo cat installer.properties >>"${LOG_FILE}"
+	sudo chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
 	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
 	export JAVA_HOME=/opt/ibm/java
 	export PATH="${JAVA_HOME}/bin:$PATH"
@@ -78,8 +85,9 @@ function configureAndInstall() {
 
 	# Install Ant (for RHEL 6.10)
 	if [[ "${VERSION_ID}" == "6.x" ]]; then
-		wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
-		tar -zxvf apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
+		cd "${WORKDIR}"
+		sudo wget -q  http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
+		sudo tar -zxvf apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
 		export ANT_HOME="${WORKDIR}/apache-ant-1.9.10"
 		export PATH="${ANT_HOME}/bin:${PATH}"
 		printf -- 'Installed Ant successfully for Rhel 6.10 \n' >>"${LOG_FILE}"
@@ -89,21 +97,31 @@ function configureAndInstall() {
 	printf -- 'Installing Logstash..... \n' | tee -a "${LOG_FILE}"
 	printf -- 'Download source code of Logstash\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget https://artifacts.elastic.co/downloads/logstash/logstash-6.4.2.zip >>"${LOG_FILE}"
-	unzip -u logstash-6.4.2.zip >>"${LOG_FILE}"
+	sudo wget -q https://artifacts.elastic.co/downloads/logstash/logstash-6.4.2.zip >>"${LOG_FILE}"
+	sudo unzip -u logstash-6.4.2.zip >>"${LOG_FILE}"
 
 	printf -- 'Jruby runs on JVM and needs a native library (libjffi-1.2.so: java foreign language interface). Get jffi source code and build with ant.\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget https://github.com/jnr/jffi/archive/jffi-1.2.16.zip >>"${LOG_FILE}"
-	unzip -u jffi-1.2.16.zip >>"${LOG_FILE}"
+	sudo wget -q https://github.com/jnr/jffi/archive/jffi-1.2.16.zip >>"${LOG_FILE}"
+	sudo unzip -u jffi-1.2.16.zip >>"${LOG_FILE}"
 	cd jffi-jffi-1.2.16
-	ant >>"${LOG_FILE}"
+	sudo ant >>"${LOG_FILE}"
 
-	printf -- 'Add libjffi-1.2.so to LD_LIBRARY_PATH \n' >>"${LOG_FILE}"
-	export LD_LIBRARY_PATH="${WORKDIR}/jffi-jffi-1.2.16/build/jni/:${LD_LIBRARY_PATH}"
+	printf -- 'Add libjffi-1.2.so to LD_LIBRARY_PATH and set permissions \n' >>"${LOG_FILE}"
+	sudo chmod 777 "${WORKDIR}/logstash-6.4.2/"
+	sudo chmod 777 "${WORKDIR}/jffi-jffi-1.2.16/"
+	#sudo chown -R "${USER}":"${USER}" "${WORKDIR}/logstash-6.4.2/"
+	#sudo chown -R "${USER}":"${USER}" "${WORKDIR}/jffi-jffi-1.2.16/"
+	export LD_LIBRARY_PATH="${WORKDIR}/jffi-jffi-1.2.16/build/jni/:$LD_LIBRARY_PATH"
 
-	# Link Logstash to /usr/bin
+	# Add config/logstash.yml to /etc/logstash/config/
+	sudo mkdir -p /etc/logstash/config/
+	sudo cp -Rf "${WORKDIR}/logstash-6.4.2/config/logstash.yml" /etc/logstash/config/logstash.yml
+
+	# Include Logstash in the PATH
+	#sudo cp -Rf "${WORKDIR}/logstash-6.4.2/bin"/* /usr/bin/
 	sudo ln -s "${WORKDIR}/logstash-6.4.2/bin/logstash" /usr/bin/
+	#export PATH=$PATH:"${WORKDIR}/logstash-6.4.2/bin"
 	printf -- 'Installed logstash successfully \n' >>"${LOG_FILE}"
 
 	#Cleanup
