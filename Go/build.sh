@@ -14,7 +14,7 @@ trap "" 1 2 ERR
 
 #Check if directory exsists
 if [ ! -d "logs" ]; then
-   mkdir -p "logs/"
+   mkdir -p "logs"
 fi
 
 
@@ -32,9 +32,9 @@ function checkPrequisites()
 {
   if command -v "sudo" > /dev/null ;
   then
-    printf -- 'Sudo : Yes\n';
+    printf -- 'Sudo : Yes\n' >> "$LOG_FILE" 
   else
-    printf -- 'Sudo : No \n';
+    printf -- 'Sudo : No \n' >> "$LOG_FILE"  
     printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
@@ -54,7 +54,7 @@ function checkPrequisites()
 
 function cleanup()
 {
-  rm -rf go1.10.1.linux-s390x.tar.gz
+  rm -rf go1.10.1.linux-s390x.tar.gz*
   printf -- 'Cleaned up the artifacts\n'  >> "$LOG_FILE"
 }
 
@@ -70,12 +70,12 @@ function configureAndInstall()
   # Install Go
   printf -- 'Downloading go binaries \n'
   wget -q https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
-  chmod ugo+r go1.10.1.linux-s390x.tar.gz
+  chmod ugo+r go"${PACKAGE_VERSION}".linux-s390x.tar.gz
 
   #sudo rm -rf /usr/local/go
-  sudo tar -C /usr/local -xzf go1.10.1.linux-s390x.tar.gz
+  sudo tar -C /usr/local -xzf go"${PACKAGE_VERSION}".linux-s390x.tar.gz
 
-  ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  sudo ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
   printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
 
   if [[ "${ID}" != "ubuntu" ]]

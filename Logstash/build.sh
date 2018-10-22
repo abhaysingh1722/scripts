@@ -8,11 +8,15 @@ PACKAGE_NAME="logstash"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
 WORKDIR="/usr/local"
-LOG_FILE="${WORKDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+CURDIR="$(pwd)"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
-trap "" 1 2 ERR
+trap cleanup 1 2 ERR
 
-mkdir -p "$WORKDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+   mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then

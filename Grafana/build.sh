@@ -8,17 +8,23 @@ PACKAGE_NAME="grafana"
 PACKAGE_VERSION="5.2.4"
 CURDIR="$(pwd)"
 GO_DEFAULT="$HOME/go"
-# Update URL with master repo
-GO_INSTALL_URL="https://raw.githubusercontent.com/sid226/scripts/master/Go/build.sh"
-# Update URL with master repo
+
+GO_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
 PHANTOMJS_INSTALL_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/build.sh"
+GRAFANA_CONFIG_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Grafana/conf/grafana.ini"
+
 FORCE="false"
+TESTS="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 
+
 trap cleanup 0 1 2 ERR
 
-mkdir -p "$CURDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -43,7 +49,7 @@ function prepare() {
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation , Go 1.10.1 and PhantomJS 2.1.1 will be installed, \n"
+		printf -- "\\n\\nAs part of the installation , Go 1.10.1 and PhantomJS 2.1.1 will be installed, \\n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -59,7 +65,16 @@ function prepare() {
 }
 
 function cleanup() {
-	rm /opt/yarn-v1.3.2.tar.gz
+
+	
+	if [ -f /opt/yarn-v1.3.2.tar.gz ]; then
+		rm /opt/yarn-v1.3.2.tar.gz
+	fi
+
+	if [ -f "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz" ]; then
+		rm "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
+	fi
+
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 }
 
@@ -67,7 +82,7 @@ function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n'
 
 	# Install grafana
-	printf -- "\nInstalling %s..... \n" "$PACKAGE_NAME"
+	printf -- "\\nInstalling %s..... \\n" "$PACKAGE_NAME"
 
 	# Grafana installation
 
@@ -78,17 +93,17 @@ function configureAndInstall() {
 	sudo tar -C "$BUILD_DIR" -xf node-v8.11.3-linux-s390x.tar.xz
 	export PATH=$PATH:/usr/local/node-v8.11.3-linux-s390x/bin
 
-	printf -- 'Install NodeJS success \n' >>"$LOG_FILE"
+	printf -- 'Install NodeJS success \\n' >>"$LOG_FILE"
 
 	cd "${CURDIR}"
 
 	# Install go
-	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
-	curl -s $GO_INSTALL_URL | bash
+	printf -- "Installing Go... \\n" | tee -a "$LOG_FILE"
+	curl -s $GO_INSTALL_URL | sudo bash
 
 	# Set GOPATH if not already set
 	if [[ -z "${GOPATH}" ]]; then
-		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
+		printf -- "Setting default value for GOPATH \\n" >>"$LOG_FILE"
 
 		#Check if go directory exists
 		if [ ! -d "$HOME/go" ]; then
@@ -97,12 +112,12 @@ function configureAndInstall() {
 		export GOPATH="${GO_DEFAULT}"
 		export PATH=$PATH:$GOPATH/bin
 	else
-		printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >>"$LOG_FILE"
+		printf -- "GOPATH already set : Value : %s \\n" "$GOPATH" >>"$LOG_FILE"
 	fi
 	printenv >>"$LOG_FILE"
 
 	#Build Grafana
-	printf -- "Building Grafana... \n" | tee -a "$LOG_FILE"
+	printf -- "Building Grafana... \\n" | tee -a "$LOG_FILE"
 	#Check if Grafana directory exists
 	if [ ! -d "$GOPATH/src/github.com/grafana" ]; then
 		printf -- "Created grafana Directory at GOPATH"
@@ -114,11 +129,10 @@ function configureAndInstall() {
 		printf -- "Removing Existing grafana Directory at GOPATH"
 		rm -rf "$GOPATH/src/github.com/grafana/grafana"
 	fi
-	git clone -q -b v5.2.4 https://github.com/grafana/grafana.git
+	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
 	cd grafana
-	printf -- "Created grafana Directory at 2"
 	make deps-go
 	make build-go
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
@@ -134,8 +148,8 @@ function configureAndInstall() {
 	# Build Grafana frontend assets
 
 	# Install PhantomJS
-	printf -- "Installing PhantomJS... \n" | tee -a "$LOG_FILE"
-	bash -c "$(curl -s $PHANTOMJS_INSTALL_URL )"
+	printf -- "Installing PhantomJS... \\n" | tee -a "$LOG_FILE"
+	bash -c "$(curl -s $PHANTOMJS_INSTALL_URL)"
 
 	printf -- 'PhantomJS install success \n' >>"$LOG_FILE"
 
@@ -160,7 +174,7 @@ function configureAndInstall() {
 
 	# Install grunt
 	cd "$GOPATH/src/github.com/grafana/grafana"
-	npm install grunt 
+	npm install grunt
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 
 	# Build Grafana frontend assets
@@ -169,16 +183,60 @@ function configureAndInstall() {
 
 	printf -- 'Grafana frontend assets build success \n' >>"$LOG_FILE"
 
+	cd "${CURDIR}"
+
+	# Move build artifacts to default directory
+	if [ ! -d "/usr/local/share/grafana" ]; then
+		printf -- "Created grafana Directory at /usr/local/share" >>"$LOG_FILE"
+		mkdir /usr/local/share/grafana
+	fi
+
+	cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
+	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
+
+	#Add grafana config
+	if [ ! -d "/etc/grafana" ]; then
+		printf -- "Created grafana config Directory at /etc" >>"$LOG_FILE"
+		mkdir /etc/grafana/
+	fi
+	wget -q $GRAFANA_CONFIG_URL
+	cp grafana.ini /etc/grafana/
+	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
+
+	#Create alias
+	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >> ~/.bashrc
+    
+	# Run Tests
+	runTest
+
 	#Cleanup
 	cleanup
 
 	#Verify grafana installation
 	if command -v "$PACKAGE_NAME-server" >/dev/null; then
-		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+		printf -- "%s installation completed. Please check the Usage to start the service.\\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 	else
-		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
+		printf -- "Error while installing %s, exiting with 127 \\n" "$PACKAGE_NAME"
 		exit 127
 	fi
+}
+
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+
+		cd "$GOPATH/src/github.com/grafana/grafana"
+		# Test backend 
+		make test-go
+
+		# Test frontend
+		make test-js
+
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+
+	fi
+	set -e
 }
 
 function logDetails() {
@@ -190,20 +248,20 @@ function logDetails() {
 	cat /proc/version >>"$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
 
-	printf -- "Detected %s \n" "$PRETTY_NAME"
-	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
+	printf -- "Detected %s \\n" "$PRETTY_NAME"
+	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
 }
 
 # Print the usage message
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install-with-tests]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -218,18 +276,24 @@ while getopts "h?dyv:" opt; do
 	y)
 		FORCE="true"
 		;;
+	t)
+		TESTS="true"
+		;;	
 	esac
 done
 
 function printSummary() {
-	printf -- '\n***************************************************************************************\n'
-	printf -- "Getting Started: \n"
-	printf -- "To run grafana , run the following command : \n"
-	printf -- "    grafana-server &   (Run in background)  \n"
-	printf -- "\nAccess grafana UI using the below link : "
-	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \n"
+	printf -- '\\n***************************************************************************************\n'
+	printf -- "Getting Started: \\n"
+	printf -- "To run grafana , run the following command : \\n"
+	printf -- "    source ~/.bashrc  \\n" 
+	printf -- "    grafana-server  &   (Run in background)  \\n" 
+	printf -- "\\nAccess grafana UI using the below link : "
+	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \\n"
+	printf -- "\\n Default homepath: /usr/local/share/grafana \\n"
+	printf -- "\\n Default config: /etc/grafana/grafana.ini \\n"
 	printf -- '***************************************************************************************\n'
-	printf -- '\n'
+	printf -- '\\n'
 }
 
 ###############################################################################################################
@@ -240,26 +304,26 @@ prepare #Check Prequisites
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
-	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get -qq update
 	sudo apt-get install -y -qq python build-essential gcc tar wget git make unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
-	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo yum install -y -q make gcc tar wget git unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
-	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo zypper -q install -y make gcc wget tar git unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 *)
-	printf -- "%s not supported \n" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "%s not supported \\n" "$DISTRO" | tee -a "$LOG_FILE"
 	exit 1
 	;;
 esac

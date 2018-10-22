@@ -7,7 +7,7 @@ PACKAGE_NAME="prometheus"
 PACKAGE_VERSION="2.4.2"
 CURDIR="$(pwd)"
 GO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
-CONFIG_PROM="https://raw.githubusercontent.com/kapilshirodkar07/scripts/master/Prometheus/config/prometheus.yml"
+CONFIG_PROM="https://raw.githubusercontent.com/imdurgadas/scripts/master/Prometheus/config/prometheus.yml"
 FORCE="false"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 trap cleanup 0 
