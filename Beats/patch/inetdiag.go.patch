@@ -46,3 +46,4 @@
 +        }
 		if err != nil {
 				return nil, errors.Wrap(err, "failed to unmarshal inet_diag_msg")
+		}
