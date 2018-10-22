@@ -21,7 +21,7 @@ BUILD_DIR="/usr/local"
 
 trap cleanup 0 1 2 ERR
 
-#Check if directory exsists
+#Check if directory exists
 if [ ! -d "$CURDIR/logs/" ]; then
 	mkdir -p "$CURDIR/logs/"
 fi
@@ -120,20 +120,20 @@ function configureAndInstall() {
 	printf -- "Building Grafana... \\n" | tee -a "$LOG_FILE"
 	#Check if Grafana directory exists
 	if [ ! -d "$GOPATH/src/github.com/grafana" ]; then
-		printf -- "Created grafana Directory at GOPATH"
-		sudo mkdir -p "$GOPATH/src/github.com/grafana"
+			sudo mkdir -p "$GOPATH/src/github.com/grafana"
+			printf -- "Created grafana Directory at GOPATH"
 	fi
 
 	cd "$GOPATH/src/github.com/grafana"
 	if [ -d "$GOPATH/src/github.com/grafana/grafana" ]; then
-		printf -- "Removing Existing grafana Directory at GOPATH"
 		sudo rm -rf "$GOPATH/src/github.com/grafana/grafana"
+		printf -- "Removing Existing grafana Directory at GOPATH"
 	fi
-	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
+	sudo git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
 	cd grafana
-	make deps-go
+	sudo make deps-go
 	sudo make build-go
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
 
@@ -174,6 +174,8 @@ function configureAndInstall() {
 
 	# Install grunt
 	cd "$GOPATH/src/github.com/grafana/grafana"
+	#Give permission
+	sudo chown -R $USER "$GOPATH/src/github.com/grafana/grafana"
 	npm install grunt
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 
