@@ -224,8 +224,9 @@ function printSummary() {
     printf -- "Next, let's set a single key, and then retrieve it:\n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
-    printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
-    printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml \n"
+    printf -- "\nThe Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
+    printf -- "Command to use with config file\n"
+    printf -- "     etcd --config-file=/etc/etcd/etcd.conf.yml \n"
     printf -- "You have successfully started etcd and written a key to the store.\n"
     printf -- '**********************************************************************************************************\n'
 }
