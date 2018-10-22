@@ -30,23 +30,23 @@ fi
 
 function prepare() {
 	if command -v "sudo" >/dev/null; then
-		printf -- 'Sudo : Yes\n'
+		printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
 	else
-		printf -- 'Sudo : No \n'
+		printf -- 'Sudo : No \n' >> "$LOG_FILE"
 		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "${LOG_FILE}"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "${LOG_FILE}"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
+		printf -- "\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
 			[Yy]*)
-				printf -- 'User responded with Yes. \n' | tee -a "${LOG_FILE}"
+				printf -- 'User responded with Yes. \n' >> "${LOG_FILE}"
 				break
 				;;
 			[Nn]*) exit ;;
