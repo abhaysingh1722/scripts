@@ -1,11 +1,19 @@
-@@ -29,7 +29,9 @@ import (
+diff --git a/audit.go b/audit.go
+index 69f8c0e..4f191ab 100644
+--- a/audit.go
++++ b/audit.go
+@@ -26,10 +26,12 @@ import (
+        "unsafe"
 
+        "github.com/pkg/errors"
+-
++       "github.com/elastic/go-libaudit/sys"
         "github.com/elastic/go-libaudit/auparse"
  )
 -
 +var (
-+       byteOrder = GetEndian()
-+)
++       byteOrder = sys.GetEndian()
++ )
  const (
         // AuditMessageMaxLength is the maximum length of an audit message (data
         // portion of a NetlinkMessage).
@@ -23,7 +31,7 @@
         buf := bytes.NewBuffer(make([]byte, sizeofAuditStatus))
         buf.Reset()
 -       if err := binary.Write(buf, binary.LittleEndian, s); err != nil {
-+       if err := binary.Write(buf, byteOrder , s); err != nil {
++       if err := binary.Write(buf, byteOrder, s); err != nil {
                 // This never returns an error.
                 panic(err)
         }
