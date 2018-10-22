@@ -60,7 +60,7 @@ function cleanup() {
 
 	#Check if Protobuf directory exists
 	if [ -d "$BUILD_DIR/protobuf" ]; then
-		rm -rf "$BUILD_DIR/protobuf"
+		sudo rm -rf "$BUILD_DIR/protobuf"
 	fi
 
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
@@ -77,13 +77,13 @@ function configureAndInstall() {
 	if [[ "$ID-$VERSION_ID" == "rhel-6.x" ]]; then
 
 		cd "$BUILD_DIR"
-		wget -q http://ftp.gnu.org/gnu/gcc/gcc-4.8.2/gcc-4.8.2.tar.bz2
+		sudo wget -q http://ftp.gnu.org/gnu/gcc/gcc-4.8.2/gcc-4.8.2.tar.bz2
 		bunzip2 gcc-4.8.2.tar.bz2
 		tar xf gcc-4.8.2.tar
 		cd gcc-4.8.2/
 		./contrib/download_prerequisites
 		cd "$BUILD_DIR"
-		mkdir gccbuild
+		sudo mkdir gccbuild
 		cd gccbuild/
 		../gcc-4.8.2/configure --prefix="$HOME/install/gcc-4.8.2" --enable-shared --disable-multilib --enable-threads=posix --with-system-zlib --enable-languages=c,c++
 
@@ -93,15 +93,15 @@ function configureAndInstall() {
 	fi
 
 	cd "$BUILD_DIR"
-	git clone -q -b v"${PACKAGE_VERSION}" git://github.com/google/protobuf.git
+	sudo git clone -q -b v"${PACKAGE_VERSION}" git://github.com/google/protobuf.git
 	cd protobuf
-	git config --global url."git://github.com/".insteadOf "https://github.com/"
-	git submodule update --init --recursive
+	sudo git config --global url."git://github.com/".insteadOf "https://github.com/"
+	sudo git submodule update --init --recursive
 	printf -- 'Git clone protobuf success \n' | tee -a "$LOG_FILE"
 
-	./autogen.sh
-	./configure
-	make
+	sudo ./autogen.sh
+	sudo ./configure
+	sudo make
 
 	# Run Tests
 	runTest
