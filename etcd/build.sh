@@ -6,15 +6,16 @@ PACKAGE_NAME="etcd"
 PACKAGE_VERSION="3.3.8"
 CURDIR="$(pwd)"
 GO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
-CONFIG_etcd="https://raw.githubusercontent.com/kapilshirodkar07/scripts/master/etcd/conf/etcd.conf.yml"
+CONFIG_ETCD="https://raw.githubusercontent.com/imdurgadas/scripts/master/etcd/conf/etcd.conf.yml"
 FORCE="false"
+TESTS="false"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 trap cleanup 0 1 2 ERR
 
 mkdir -p "$CURDIR/logs/"
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
-if [ -f "/etc/os-release" ];then
+if [ -f "/etc/os-release" ]; then
     source "/etc/os-release"
 else
     cat /etc/redhat-release >> "${LOG_FILE}"
@@ -39,28 +40,25 @@ function prepare() {
         printf -- "Go : Yes \n";
     else
         printf -- "Go : No \n";
-        printf -- "This setup includes installation of Go.\n";
     fi
 
     if command -v $PACKAGE_NAME > /dev/null;
     then
         printf -- "%s : Yes \n" "$PACKAGE_NAME" | tee -a  "$LOG_FILE"
-        printf -- "\nYou already have the package installed on ur system.\n"
     else
         printf -- "%s : No \n" "$PACKAGE_NAME" ;
-        printf -- 'Package not present on system \n\n'
     fi;
 
     if [[ "$FORCE" == "true" ]] ;
     then
-        printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+        printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
     else
         # Ask user for prerequisite installation
-        printf -- "\n\nAs part of the installation , Go 1.10.1 will be installed, \n";
+        printf -- "\nAs part of the installation , Go 1.10.1 will be installed, \n";
         while true; do
 		    read -r -p "Do you want to continue (y/n) ? :  " yn
 		    case $yn in
-  	 		    [Yy]* ) printf -- 'User responded with Yes. \n' | tee -a "$LOG_FILE"; 
+  	 		    [Yy]* ) printf -- 'User responded with Yes. \n' >> "$LOG_FILE"; 
 	                    break;;
     		    [Nn]* ) exit;;
     		    *) 	echo "Please provide confirmation to proceed.";;
@@ -81,7 +79,7 @@ function configureAndInstall() {
     
     #GO Installation
     printf -- "\n\n Installing Go \n" | tee -a "$LOG_FILE"
-    curl $GO_URL | bash
+    curl $GO_URL | sudo bash
     
     # Install etcd
     printf -- 'Installing etcd..... \n'
@@ -134,16 +132,20 @@ function configureAndInstall() {
 
     #Get a etcd.conf.yml in etc/prometheus/
     if [ ! -d /etc/etcd ];then
-        mkdir /etc/etcd/
+        sudo mkdir /etc/etcd/
     fi
 
-    curl $CONFIG_etcd > /etc/etcd/etcd.conf.yml
+    curl $CONFIG_ETCD | sudo tee /etc/etcd/etcd.conf.yml
     printf -- "Added etcd.conf.yml in /etc/etcd \n" >> "$LOG_FILE"
             
     # Add etcd to /usr/bin
-    cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
+    sudo cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
     printf -- 'Build etcd successfully \n' >>"$LOG_FILE"
 
+    #Run tests
+    runTest
+    
+    #cleanup
     cleanup
 
     #Verify etcd installation
@@ -155,7 +157,17 @@ function configureAndInstall() {
     fi
 
 }
-
+#Tests function
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+		cd "${GOPATH}/src/github.com/coreos/etcd"
+		./test
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+	fi
+	set -e
+}
 function logDetails() {
     printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
     if [ -f "/etc/os-release" ]; then
@@ -172,13 +184,13 @@ function logDetails() {
 function printHelp() {
     echo
     echo "Usage: "
-    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install and run tests]"
     echo "       default: If no -v specified, latest version will be installed"
     echo
 }
 
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dyv:t" opt; do
     case "$opt" in
     h | \?)
         printHelp
@@ -193,27 +205,29 @@ while getopts "h?dyv:" opt; do
         ;;
     y)
         FORCE="true"
-        exit 0
+        ;;
+    t)
+        TESTS="true"
         ;;
     esac
 done
 
 
 function printSummary() {
-    printf -- '\n***************************************************************************************\n'
-    printf -- "\n\n* Getting Started * \n"
-    printf -- "\nRunning etcd: \n"
+    printf -- '\n********************************************************************************************************\n'
+    printf -- "\n* Getting Started * \n"
+    printf -- "Running etcd: \n"
     printf -- " etcd  \n\n"
-    printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x, set following\n"
-    printf -- "\nexport ETCD_UNSUPPORTED_ARCH=s390x \n"
-    printf -- "\nThis will bring up etcd listening on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
-    printf -- "Next, let's set a single key, and then retrieve it:"
+    printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x , set following\n"
+    printf -- "            export ETCD_UNSUPPORTED_ARCH=s390x \n"
+    printf -- "etcd will listen on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
+    printf -- "Next, let's set a single key, and then retrieve it:\n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
     printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
     printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml \n"
     printf -- "You have successfully started etcd and written a key to the store.\n"
-    printf -- '***************************************************************************************\n'
+    printf -- '**********************************************************************************************************\n'
 }
     
 logDetails
@@ -223,18 +237,21 @@ DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
     "ubuntu-16.04" | "ubuntu-18.04")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo apt-get update
-        sudo apt-get install -qq git curl wget tar gcc > /dev/null
+        printf -- "Installing dependencies... it may take some time.\n"
+        sudo apt-get update > /dev/null
+        sudo apt-get install -qq git curl wget tar gcc >/dev/null
         configureAndInstall
         ;;
     "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo yum install -y -q curl git wget tar gcc which > /dev/null
+        printf -- "Installing dependencies... it may take some time.\n"
+        sudo yum install -y -q curl git wget tar gcc which >/dev/null
         configureAndInstall
         ;;
     "sles-12.3" | "sles-15")
         printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-        sudo zypper install -y -q curl git wget tar gcc which
+        printf -- "Installing dependencies... it may take some time.\n"
+        sudo zypper -q install -y  curl git wget tar gcc which >/dev/null
         configureAndInstall
         ;;
     *)
