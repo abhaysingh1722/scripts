@@ -60,9 +60,9 @@ function checkPrequisites() {
 }
 
 function cleanup() {
-	rm -rf "${BUILD_DIR}/openssl"
-	rm -rf "${BUILD_DIR}/curl"
-	rm -rf "${BUILD_DIR}/curl/mk-ca-bundle.pl"
+	sudo rm -rf "${BUILD_DIR}/openssl"
+	sudo rm -rf "${BUILD_DIR}/curl"
+	sudo rm -rf "${BUILD_DIR}/curl/mk-ca-bundle.pl"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 
 }
@@ -73,15 +73,36 @@ function configureAndInstall() {
 	if [[ "${VERSION_ID}" == "15" ]]; then
 		# Build OpenSSL 1.0.2
 		cd "$BUILD_DIR"
+
+		#Check if directory exsists
+		if [ -d "$BUILD_DIR/openssl/" ]; then
+			sudo rm -rf "$BUILD_DIR/openssl"
+			printf -- 'remove openssl directory success\n' >>"$LOG_FILE"
+		fi
+		#Give permission
+		sudo chown -R "$USER" "$BUILD_DIR"
+
 		git clone -q -b OpenSSL_1_0_2l git://github.com/openssl/openssl.git
 		cd openssl
 		./config --prefix=/usr --openssldir=/usr/local/openssl shared
+		#Give permission
+		sudo chown -R "$USER" "$BUILD_DIR/openssl/"
+
 		make
 		sudo make install
 
 		# Build cURL 7.52.1
 		cd "$BUILD_DIR"
+		#Check if directory exsists
+		if [ -d "$BUILD_DIR/curl/" ]; then
+			sudo rm -rf "$BUILD_DIR/curl"
+			printf -- 'remove curl directory success\n' >>"$LOG_FILE"
+		fi
+
 		git clone -q -b curl-7_52_1 git://github.com/curl/curl.git
+		#Give permission
+		sudo chown -R "$USER" "$BUILD_DIR/curl/"
+
 		cd curl
 		./buildconf
 		./configure --prefix=/usr/local --with-ssl --disable-shared
@@ -91,14 +112,15 @@ function configureAndInstall() {
 		printf -- 'Build cURL success\n' >>"$LOG_FILE"
 
 		# Generate ca-bundle.crt for curl
-		echo insecure >> "$HOME/.curlrc"
-		wget -q https://raw.githubusercontent.com/curl/curl/curl-7_53_0/lib/mk-ca-bundle.pl
+		echo insecure >>"$HOME/.curlrc"
+		sudo wget -q https://raw.githubusercontent.com/curl/curl/curl-7_53_0/lib/mk-ca-bundle.pl
+		pwd
 		perl mk-ca-bundle.pl -k
-		
+
 		SSL_CERT_FILE=$(pwd)/ca-bundle.crt
 		export SSL_CERT_FILE
 
-		rm "$HOME/.curlrc"
+		sudo rm "$HOME/.curlrc"
 
 		printf -- 'Build OpenSSL success\n' >>"$LOG_FILE"
 
@@ -106,7 +128,16 @@ function configureAndInstall() {
 
 	# Install Phantomjs
 	cd "$BUILD_DIR"
+	#Check if directory exsists
+	if [ -d "$BUILD_DIR/phantomjs/" ]; then
+		sudo rm -rf "$BUILD_DIR/phantomjs"
+		printf -- 'remove phantomjs directory success\n' >>"$LOG_FILE"
+	fi
+
 	git clone -q -b "${PACKAGE_VERSION}" git://github.com/ariya/phantomjs.git
+	#Give permission
+	sudo chown -R "$USER" "$BUILD_DIR/phantomjs/"
+
 	cd phantomjs
 	git submodule init
 	git submodule update
@@ -114,9 +145,9 @@ function configureAndInstall() {
 	# Download  JSStringRef.h
 	if [[ "${VERSION_ID}" == "15" ]]; then
 		# Patch config file
-		wget -q $CONF_URL/patch.diff
+		sudo wget -q $CONF_URL/patch.diff
 		# replace config file
-		patch "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h" patch.diff
+		sudo patch "${BUILD_DIR}/phantomjs/src/qt/qtwebkit/Source/JavaScriptCore/API/JSStringRef.h" patch.diff
 		printf -- 'Updated JSStringRef.h for sles-15 \n' >>"$LOG_FILE"
 	fi
 
@@ -125,7 +156,7 @@ function configureAndInstall() {
 	printf -- 'Build Phantomjs success \n' >>"$LOG_FILE"
 
 	# Add Phantomjs to /usr/bin
-	cp "${BUILD_DIR}/phantomjs/bin/phantomjs" /usr/bin/
+	sudo cp "${BUILD_DIR}/phantomjs/bin/phantomjs" /usr/bin/
 	printf -- 'Add Phantomjs to /usr/bin success \n' >>"$LOG_FILE"
 
 	# Run Tests
@@ -142,7 +173,6 @@ function configureAndInstall() {
 		exit 127
 	fi
 }
-
 
 function runTest() {
 	set +e
@@ -233,7 +263,7 @@ case "$DISTRO" in
 	sudo apt-get -qq update >/dev/null
 
 	printf -- 'Installing the PhantomJS from repository \n' | tee -a "$LOG_FILE"
-	sudo sudo apt-get install -y -qq phantomjs  >/dev/null
+	sudo sudo apt-get install -y -qq phantomjs >/dev/null
 	verify_repo_install
 	;;
 
@@ -252,7 +282,7 @@ case "$DISTRO" in
 		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby openssl-devel freetype-devel fontconfig-devel libicu-devel sqlite-devel libpng-devel libjpeg-devel python-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 python python-setuptools >/dev/null
 		printf -- 'Install dependencies for sles-12.3 success \n' >>"$LOG_FILE"
 	else
-		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool patch >/dev/null
+		sudo zypper -q install -y gcc gcc-c++ make flex bison gperf ruby freetype2-devel fontconfig-devel libicu-devel sqlite3-devel libpng16-compat-devel libjpeg8-devel python2 python2-setuptools git xorg-x11-devel xorg-x11-essentials xorg-x11-fonts xorg-x11 xorg-x11-util-devel libXfont-devel libXfont1 autoconf automake libtool patch wget >/dev/null
 		printf -- 'Install dependencies for sles-15 success \n' >>"$LOG_FILE"
 	fi
 

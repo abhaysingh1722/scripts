@@ -48,7 +48,7 @@ function prepare() {
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\\n\\nAs part of the installation , Go 1.10.1 and PhantomJS 2.1.1 will be installed, \\n"
+		printf -- "\n\nAs part of the installation , Go 1.10.1 and PhantomJS 2.1.1 will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -80,7 +80,7 @@ function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n'
 
 	# Install grafana
-	printf -- "\\nInstalling %s..... \\n" "$PACKAGE_NAME"
+	printf -- "\nInstalling %s..... \n" "$PACKAGE_NAME"
 
 	# Grafana installation
 
@@ -91,17 +91,17 @@ function configureAndInstall() {
 	sudo tar -C "$BUILD_DIR" -xf node-v8.11.3-linux-s390x.tar.xz
 	export PATH=$PATH:/usr/local/node-v8.11.3-linux-s390x/bin
 
-	printf -- 'Install NodeJS success \\n' >>"$LOG_FILE"
+	printf -- 'Install NodeJS success \n' >>"$LOG_FILE"
 
 	cd "${CURDIR}"
 
 	# Install go
-	printf -- "Installing Go... \\n" | tee -a "$LOG_FILE"
+	printf -- "Installing Go... \n" | tee -a "$LOG_FILE"
 	curl -s $GO_INSTALL_URL | sudo bash
 
 	# Set GOPATH if not already set
 	if [[ -z "${GOPATH}" ]]; then
-		printf -- "Setting default value for GOPATH \\n" >>"$LOG_FILE"
+		printf -- "Setting default value for GOPATH \n" >>"$LOG_FILE"
 
 		#Check if go directory exists
 		if [ ! -d "$HOME/go" ]; then
@@ -110,12 +110,12 @@ function configureAndInstall() {
 		export GOPATH="${GO_DEFAULT}"
 		export PATH=$PATH:$GOPATH/bin
 	else
-		printf -- "GOPATH already set : Value : %s \\n" "$GOPATH" >>"$LOG_FILE"
+		printf -- "GOPATH already set : Value : %s \n" "$GOPATH" >>"$LOG_FILE"
 	fi
 	printenv >>"$LOG_FILE"
 
 	#Build Grafana
-	printf -- "Building Grafana... \\n" | tee -a "$LOG_FILE"
+	printf -- "Building Grafana... \n" | tee -a "$LOG_FILE"
 	#Check if Grafana directory exists
 	if [ ! -d "$GOPATH/src/github.com/grafana" ]; then
 		sudo mkdir -p "$GOPATH/src/github.com/grafana"
@@ -151,7 +151,7 @@ function configureAndInstall() {
 	# Build Grafana frontend assets
 
 	# Install PhantomJS
-	printf -- "Installing PhantomJS... \\n" | tee -a "$LOG_FILE"
+	printf -- "Installing PhantomJS... \n" | tee -a "$LOG_FILE"
 
 	sudo wget -q $PHANTOMJS_INSTALL_URL -O phantom_setup.sh
 	bash phantom_setup.sh -y
@@ -222,9 +222,9 @@ function configureAndInstall() {
 
 	#Verify grafana installation
 	if command -v "$PACKAGE_NAME-server" >/dev/null; then
-		printf -- "%s installation completed. Please check the Usage to start the service.\\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 	else
-		printf -- "Error while installing %s, exiting with 127 \\n" "$PACKAGE_NAME"
+		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
 		exit 127
 	fi
 }
@@ -232,7 +232,7 @@ function configureAndInstall() {
 function runTest() {
 	set +e
 	if [[ "$TESTS" == "true" ]]; then
-		printf -- "TEST Flag is set. continue with running test \\n"
+		printf -- "TEST Flag is set. continue with running test \n"
 
 		cd "$GOPATH/src/github.com/grafana/grafana"
 		# Test backend
@@ -241,7 +241,7 @@ function runTest() {
 		# Test frontend
 		make test-js
 
-		printf -- "Tests completed. \\n" | tee -a "$LOG_FILE"
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
 
 	fi
 	set -e
@@ -256,8 +256,8 @@ function logDetails() {
 	cat /proc/version >>"$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
 
-	printf -- "Detected %s \\n" "$PRETTY_NAME"
-	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
+	printf -- "Detected %s \n" "$PRETTY_NAME"
+	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
 }
 
 # Print the usage message
@@ -291,17 +291,17 @@ while getopts "h?dytv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\\n***************************************************************************************\n'
-	printf -- "Getting Started: \\n"
-	printf -- "To run grafana , run the following command : \\n"
-	printf -- "    source ~/.bashrc  \\n"
-	printf -- "    grafana-server  &   (Run in background)  \\n"
-	printf -- "\\nAccess grafana UI using the below link : "
-	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \\n"
-	printf -- "\\n Default homepath: /usr/local/share/grafana \\n"
-	printf -- "\\n Default config: /etc/grafana/grafana.ini \\n"
+	printf -- '\n***************************************************************************************\n'
+	printf -- "Getting Started: \n"
+	printf -- "To run grafana , run the following command : \n"
+	printf -- "    source ~/.bashrc  \n"
+	printf -- "    grafana-server  &   (Run in background)  \n"
+	printf -- "\nAccess grafana UI using the below link : "
+	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \n"
+	printf -- "\n Default homepath: /usr/local/share/grafana \n"
+	printf -- "\n Default config: /etc/grafana/grafana.ini \n"
 	printf -- '***************************************************************************************\n'
-	printf -- '\\n'
+	printf -- '\n'
 }
 
 ###############################################################################################################
@@ -312,26 +312,26 @@ prepare #Check Prequisites
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get -qq update
 	sudo apt-get install -y -qq python build-essential gcc tar wget git make unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo yum install -y -q make gcc tar wget git unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 "sles-12.3" | "sles-15")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo zypper -q install -y make gcc wget tar git unzip curl >/dev/null
 	configureAndInstall
 	;;
 
 *)
-	printf -- "%s not supported \\n" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "%s not supported \n" "$DISTRO" | tee -a "$LOG_FILE"
 	exit 1
 	;;
 esac
