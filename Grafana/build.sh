@@ -128,13 +128,13 @@ function configureAndInstall() {
 		printf -- "Removing Existing grafana Directory at GOPATH"
 	fi
 	#Give permission
-	sudo chown -R $USER "$GOPATH/src/github.com/grafana/"
+	sudo chown -R "$USER" "$GOPATH/src/github.com/grafana/"
 
 	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
 	#Give permission
-	sudo chown -R $USER "$GOPATH/src/github.com/grafana/grafana/" "$GOPATH/src/github.com/" "$GOPATH/"
+	sudo chown -R "$USER" "$GOPATH/src/github.com/grafana/grafana/" "$GOPATH/src/github.com/" "$GOPATH/"
 	cd grafana
 	make deps-go
 	make build-go
@@ -199,7 +199,7 @@ function configureAndInstall() {
 
 	sudo cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
 	#Give permission to user
-	sudo chown -R $USER /usr/local/share/grafana/
+	sudo chown -R "$USER" /usr/local/share/grafana/
 	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
 
 	#Add grafana config
@@ -232,7 +232,7 @@ function configureAndInstall() {
 function runTest() {
 	set +e
 	if [[ "$TESTS" == "true" ]]; then
-		printf -- "TEST Flag is set. continue with running test \n"
+		printf -- "TEST Flag is set. continue with running test \\n"
 
 		cd "$GOPATH/src/github.com/grafana/grafana"
 		# Test backend
@@ -241,7 +241,7 @@ function runTest() {
 		# Test frontend
 		make test-js
 
-		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+		printf -- "Tests completed. \\n" | tee -a "$LOG_FILE"
 
 	fi
 	set -e
