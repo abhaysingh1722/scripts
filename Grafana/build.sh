@@ -149,8 +149,10 @@ function configureAndInstall() {
 
 	# Install PhantomJS
 	printf -- "Installing PhantomJS... \\n" | tee -a "$LOG_FILE"
-	bash -c "$(curl -s $PHANTOMJS_INSTALL_URL)"
-
+	
+	sudo wget -q $PHANTOMJS_INSTALL_URL -O phantom_setup.sh
+	bash phantom_setup.sh -y
+	
 	printf -- 'PhantomJS install success \n' >>"$LOG_FILE"
 
 	# export  QT_QPA_PLATFORM on Ubuntu
