@@ -57,7 +57,6 @@ function prepare() {
 }
 
 function cleanup() {
-	sudo rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
 	sudo rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
 	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
@@ -73,6 +72,7 @@ function configureAndInstall() {
 	sudo wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz | tee -a "${LOG_FILE}"
 	sudo tar xvf node-v8.11.4-linux-s390x.tar.gz >> "${LOG_FILE}"
 	sudo mv node-v8.11.4-linux-s390x nodejs
+	sudo chmod +x nodejs
 	export PATH=$PWD/nodejs/bin:$PATH
 	sudo node -v  >> "${LOG_FILE}"
 
@@ -93,7 +93,7 @@ function configureAndInstall() {
 	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/config/kibana.yml" /etc/kibana/config/kibana.yml
 
 	# Add kibana to /usr/bin
-	sudo cp -Rf "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
+	sudo ln -s "${WORKDIR}/kibana-6.4.2-linux-x86_64/bin/kibana" /usr/bin/
 	printf -- 'Installed kibana successfully \n' >> "${LOG_FILE}"
 
 	#Cleanup
