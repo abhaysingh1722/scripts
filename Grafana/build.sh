@@ -18,10 +18,9 @@ TESTS="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 
-
 trap cleanup 0 1 2 ERR
 
-#Check if directory exsists
+#Check if directory exists
 if [ ! -d "$CURDIR/logs/" ]; then
 	mkdir -p "$CURDIR/logs/"
 fi
@@ -66,13 +65,12 @@ function prepare() {
 
 function cleanup() {
 
-	
 	if [ -f /opt/yarn-v1.3.2.tar.gz ]; then
-		rm /opt/yarn-v1.3.2.tar.gz
+		sudo rm /opt/yarn-v1.3.2.tar.gz
 	fi
 
 	if [ -f "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz" ]; then
-		rm "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
+		sudo rm "$BUILD_DIR/node-v8.11.3-linux-s390x.tar.xz"
 	fi
 
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
@@ -88,8 +86,8 @@ function configureAndInstall() {
 
 	#Install NodeJS
 	cd "$BUILD_DIR"
-	wget -q https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-s390x.tar.xz
-	chmod ugo+r node-v8.11.3-linux-s390x.tar.xz
+	sudo wget -q https://nodejs.org/dist/v8.11.3/node-v8.11.3-linux-s390x.tar.xz
+	sudo chmod ugo+r node-v8.11.3-linux-s390x.tar.xz
 	sudo tar -C "$BUILD_DIR" -xf node-v8.11.3-linux-s390x.tar.xz
 	export PATH=$PATH:/usr/local/node-v8.11.3-linux-s390x/bin
 
@@ -107,7 +105,7 @@ function configureAndInstall() {
 
 		#Check if go directory exists
 		if [ ! -d "$HOME/go" ]; then
-			mkdir "$HOME/go"
+			sudo mkdir "$HOME/go"
 		fi
 		export GOPATH="${GO_DEFAULT}"
 		export PATH=$PATH:$GOPATH/bin
@@ -120,26 +118,31 @@ function configureAndInstall() {
 	printf -- "Building Grafana... \\n" | tee -a "$LOG_FILE"
 	#Check if Grafana directory exists
 	if [ ! -d "$GOPATH/src/github.com/grafana" ]; then
+		sudo mkdir -p "$GOPATH/src/github.com/grafana"
 		printf -- "Created grafana Directory at GOPATH"
-		mkdir -p "$GOPATH/src/github.com/grafana"
 	fi
 
 	cd "$GOPATH/src/github.com/grafana"
 	if [ -d "$GOPATH/src/github.com/grafana/grafana" ]; then
+		sudo rm -rf "$GOPATH/src/github.com/grafana/grafana"
 		printf -- "Removing Existing grafana Directory at GOPATH"
-		rm -rf "$GOPATH/src/github.com/grafana/grafana"
 	fi
+	#Give permission
+	sudo chown -R "$USER" "$GOPATH/src/github.com/grafana/"
+
 	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
+	#Give permission
+	sudo chown -R "$USER" "$GOPATH/src/github.com/grafana/grafana/" "$GOPATH/src/github.com/" "$GOPATH/"
 	cd grafana
 	make deps-go
 	make build-go
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
 
 	#Add grafana to /usr/bin
-	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server" /usr/bin/
-	cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli" /usr/bin/
+	sudo cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-server" /usr/bin/
+	sudo cp "$GOPATH/src/github.com/grafana/grafana/bin/linux-s390x/grafana-cli" /usr/bin/
 
 	printf -- 'Add grafana to /usr/bin success \n' >>"$LOG_FILE"
 
@@ -149,7 +152,9 @@ function configureAndInstall() {
 
 	# Install PhantomJS
 	printf -- "Installing PhantomJS... \\n" | tee -a "$LOG_FILE"
-	bash -c "$(curl -s $PHANTOMJS_INSTALL_URL)"
+
+	sudo wget -q $PHANTOMJS_INSTALL_URL -O phantom_setup.sh
+	bash phantom_setup.sh -y
 
 	printf -- 'PhantomJS install success \n' >>"$LOG_FILE"
 
@@ -160,7 +165,7 @@ function configureAndInstall() {
 
 	# Install gperf on RHEL
 	if [[ "$ID" == "rhel" ]]; then
-		wget -q http://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/23/Everything/s390x/os/Packages/g/gperf-3.0.4-11.fc23.s390x.rpm
+		sudo wget -q http://archives.fedoraproject.org/pub/archive/fedora-secondary/releases/23/Everything/s390x/os/Packages/g/gperf-3.0.4-11.fc23.s390x.rpm
 		sudo rpm --quiet -Uvh gperf-3.0.4-11.fc23.s390x.rpm
 		printf -- 'gperf install success \n' >>"$LOG_FILE"
 	fi
@@ -174,6 +179,7 @@ function configureAndInstall() {
 
 	# Install grunt
 	cd "$GOPATH/src/github.com/grafana/grafana"
+
 	npm install grunt
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 
@@ -188,24 +194,26 @@ function configureAndInstall() {
 	# Move build artifacts to default directory
 	if [ ! -d "/usr/local/share/grafana" ]; then
 		printf -- "Created grafana Directory at /usr/local/share" >>"$LOG_FILE"
-		mkdir /usr/local/share/grafana
+		sudo mkdir /usr/local/share/grafana
 	fi
 
-	cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
+	sudo cp -r "$GOPATH/src/github.com/grafana/grafana"/* /usr/local/share/grafana
+	#Give permission to user
+	sudo chown -R "$USER" /usr/local/share/grafana/
 	printf -- 'Move build artifacts success \n' >>"$LOG_FILE"
 
 	#Add grafana config
 	if [ ! -d "/etc/grafana" ]; then
 		printf -- "Created grafana config Directory at /etc" >>"$LOG_FILE"
-		mkdir /etc/grafana/
+		sudo mkdir /etc/grafana/
 	fi
-	wget -q $GRAFANA_CONFIG_URL
-	cp grafana.ini /etc/grafana/
+	sudo wget -q $GRAFANA_CONFIG_URL
+	sudo cp grafana.ini /etc/grafana/
 	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
 
 	#Create alias
-	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >> ~/.bashrc
-    
+	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >>~/.bashrc
+
 	# Run Tests
 	runTest
 
@@ -224,16 +232,16 @@ function configureAndInstall() {
 function runTest() {
 	set +e
 	if [[ "$TESTS" == "true" ]]; then
-		printf -- "TEST Flag is set. continue with running test \n"
+		printf -- "TEST Flag is set. continue with running test \\n"
 
 		cd "$GOPATH/src/github.com/grafana/grafana"
-		# Test backend 
+		# Test backend
 		make test-go
 
 		# Test frontend
 		make test-js
 
-		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+		printf -- "Tests completed. \\n" | tee -a "$LOG_FILE"
 
 	fi
 	set -e
@@ -278,7 +286,7 @@ while getopts "h?dytv:" opt; do
 		;;
 	t)
 		TESTS="true"
-		;;	
+		;;
 	esac
 done
 
@@ -286,8 +294,8 @@ function printSummary() {
 	printf -- '\\n***************************************************************************************\n'
 	printf -- "Getting Started: \\n"
 	printf -- "To run grafana , run the following command : \\n"
-	printf -- "    source ~/.bashrc  \\n" 
-	printf -- "    grafana-server  &   (Run in background)  \\n" 
+	printf -- "    source ~/.bashrc  \\n"
+	printf -- "    grafana-server  &   (Run in background)  \\n"
 	printf -- "\\nAccess grafana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \\n"
 	printf -- "\\n Default homepath: /usr/local/share/grafana \\n"
