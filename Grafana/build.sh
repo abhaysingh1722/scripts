@@ -18,7 +18,6 @@ TESTS="false"
 LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 BUILD_DIR="/usr/local"
 
-
 trap cleanup 0 1 2 ERR
 
 #Check if directory exists
@@ -66,7 +65,6 @@ function prepare() {
 
 function cleanup() {
 
-	
 	if [ -f /opt/yarn-v1.3.2.tar.gz ]; then
 		sudo rm /opt/yarn-v1.3.2.tar.gz
 	fi
@@ -120,8 +118,8 @@ function configureAndInstall() {
 	printf -- "Building Grafana... \\n" | tee -a "$LOG_FILE"
 	#Check if Grafana directory exists
 	if [ ! -d "$GOPATH/src/github.com/grafana" ]; then
-			sudo mkdir -p "$GOPATH/src/github.com/grafana"
-			printf -- "Created grafana Directory at GOPATH"
+		sudo mkdir -p "$GOPATH/src/github.com/grafana"
+		printf -- "Created grafana Directory at GOPATH"
 	fi
 
 	cd "$GOPATH/src/github.com/grafana"
@@ -129,12 +127,17 @@ function configureAndInstall() {
 		sudo rm -rf "$GOPATH/src/github.com/grafana/grafana"
 		printf -- "Removing Existing grafana Directory at GOPATH"
 	fi
-	sudo git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
+	#Give permission
+	sudo chown -R $USER "$GOPATH/src/github.com/grafana/"
+
+	git clone -q -b v"${PACKAGE_VERSION}" https://github.com/grafana/grafana.git
 
 	printf -- "Created grafana Directory at 1"
+	#Give permission
+	sudo chown -R $USER "$GOPATH/src/github.com/grafana/grafana/" "$GOPATH/src/github.com/" "$GOPATH/"
 	cd grafana
-	sudo make deps-go
-	sudo make build-go
+	make deps-go
+	make build-go
 	printf -- 'Build Grafana success \n' >>"$LOG_FILE"
 
 	#Add grafana to /usr/bin
@@ -149,10 +152,10 @@ function configureAndInstall() {
 
 	# Install PhantomJS
 	printf -- "Installing PhantomJS... \\n" | tee -a "$LOG_FILE"
-	
+
 	sudo wget -q $PHANTOMJS_INSTALL_URL -O phantom_setup.sh
 	bash phantom_setup.sh -y
-	
+
 	printf -- 'PhantomJS install success \n' >>"$LOG_FILE"
 
 	# export  QT_QPA_PLATFORM on Ubuntu
@@ -176,8 +179,7 @@ function configureAndInstall() {
 
 	# Install grunt
 	cd "$GOPATH/src/github.com/grafana/grafana"
-	#Give permission
-	sudo chown -R $USER "$GOPATH/src/github.com/grafana/grafana"
+
 	npm install grunt
 	printf -- 'grunt install success \n' >>"$LOG_FILE"
 
@@ -210,8 +212,8 @@ function configureAndInstall() {
 	printf -- 'Add grafana config success \n' >>"$LOG_FILE"
 
 	#Create alias
-	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >> ~/.bashrc
-    
+	echo "alias grafana-server='grafana-server -homepath /usr/local/share/grafana -config /etc/grafana/grafana.ini'" >>~/.bashrc
+
 	# Run Tests
 	runTest
 
@@ -233,7 +235,7 @@ function runTest() {
 		printf -- "TEST Flag is set. continue with running test \n"
 
 		cd "$GOPATH/src/github.com/grafana/grafana"
-		# Test backend 
+		# Test backend
 		make test-go
 
 		# Test frontend
@@ -284,7 +286,7 @@ while getopts "h?dytv:" opt; do
 		;;
 	t)
 		TESTS="true"
-		;;	
+		;;
 	esac
 done
 
@@ -292,8 +294,8 @@ function printSummary() {
 	printf -- '\\n***************************************************************************************\n'
 	printf -- "Getting Started: \\n"
 	printf -- "To run grafana , run the following command : \\n"
-	printf -- "    source ~/.bashrc  \\n" 
-	printf -- "    grafana-server  &   (Run in background)  \\n" 
+	printf -- "    source ~/.bashrc  \\n"
+	printf -- "    grafana-server  &   (Run in background)  \\n"
 	printf -- "\\nAccess grafana UI using the below link : "
 	printf -- "http://<host-ip>:<port>/    [Default port = 3000] \\n"
 	printf -- "\\n Default homepath: /usr/local/share/grafana \\n"
