@@ -7,12 +7,17 @@ set -e
 PACKAGE_NAME="phantomjs"
 PACKAGE_VERSION="2.1.1"
 CURDIR="$(pwd)"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 FORCE="false"
 BUILD_DIR="/usr/local"
-CONF_URL="https://raw.githubusercontent.com/sid226/scripts/master/PhantomJS/patch"
-
+CONF_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/PhantomJS/patch"
+TESTS="false"
 trap "" 1 2 ERR
+
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it  doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -58,7 +63,6 @@ function cleanup() {
 	rm -rf "${BUILD_DIR}/openssl"
 	rm -rf "${BUILD_DIR}/curl"
 	rm -rf "${BUILD_DIR}/curl/mk-ca-bundle.pl"
-	rm -rf "${BUILD_DIR}/phantomjs"
 	printf -- 'Cleaned up the artifacts\n' >>"$LOG_FILE"
 
 }
@@ -87,11 +91,14 @@ function configureAndInstall() {
 		printf -- 'Build cURL success\n' >>"$LOG_FILE"
 
 		# Generate ca-bundle.crt for curl
-		echo insecure >>$HOME/.curlrc
+		echo insecure >> "$HOME/.curlrc"
 		wget -q https://raw.githubusercontent.com/curl/curl/curl-7_53_0/lib/mk-ca-bundle.pl
 		perl mk-ca-bundle.pl -k
-		export SSL_CERT_FILE=$(pwd)/ca-bundle.crt
-		rm $HOME/.curlrc
+		
+		SSL_CERT_FILE=$(pwd)/ca-bundle.crt
+		export SSL_CERT_FILE
+
+		rm "$HOME/.curlrc"
 
 		printf -- 'Build OpenSSL success\n' >>"$LOG_FILE"
 
@@ -121,6 +128,9 @@ function configureAndInstall() {
 	cp "${BUILD_DIR}/phantomjs/bin/phantomjs" /usr/bin/
 	printf -- 'Add Phantomjs to /usr/bin success \n' >>"$LOG_FILE"
 
+	# Run Tests
+	runTest
+
 	#Clean up
 	cleanup
 
@@ -131,6 +141,21 @@ function configureAndInstall() {
 		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
 		exit 127
 	fi
+}
+
+
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+
+		cd "${BUILD_DIR}/phantomjs/test"
+		python run-tests.py
+
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+
+	fi
+	set -e
 }
 
 function logDetails() {
@@ -151,12 +176,12 @@ function logDetails() {
 function printHelp() {
 	echo
 	echo "Usage: "
-	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+	echo "  install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install-with-tests]"
 	echo "       default: If no -v specified, latest version will be installed"
 	echo
 }
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dytv:" opt; do
 	case "$opt" in
 	h | \?)
 		printHelp
@@ -170,6 +195,9 @@ while getopts "h?dyv:" opt; do
 		;;
 	y)
 		FORCE="true"
+		;;
+	t)
+		TESTS="true"
 		;;
 	esac
 done

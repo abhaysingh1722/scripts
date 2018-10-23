@@ -12,7 +12,12 @@ WORKDIR="/usr/local"
 CURDIR="$(pwd)"
 LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
-trap "" 1 2 ERR
+trap cleanup 1 2 ERR
+
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+	mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -72,13 +77,16 @@ function configureAndInstall() {
 	# Install IBMSDK
 	printf -- 'Configuring IBMSDK \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-
+	printf -- 'wget ibm-java \n' | tee -a "${LOG_FILE}"
 	sudo wget -q http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
-	sudo wget -q  https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
+	printf -- 'wget installer.properties \n' | tee -a "${LOG_FILE}"
+	sudo wget -q https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
 	tail -n +3 installer.properties.java | sudo tee installer.properties
+	printf -- 'tail \n' | tee -a "${LOG_FILE}"
 	sudo cat installer.properties >>"${LOG_FILE}"
 	sudo chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
 	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
+
 	export JAVA_HOME=/opt/ibm/java
 	export PATH="${JAVA_HOME}/bin:$PATH"
 	java -version
@@ -86,7 +94,7 @@ function configureAndInstall() {
 	# Install Ant (for RHEL 6.10)
 	if [[ "${VERSION_ID}" == "6.x" ]]; then
 		cd "${WORKDIR}"
-		sudo wget -q  http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
+		sudo wget -q http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
 		sudo tar -zxvf apache-ant-1.9.10-bin.tar.gz >>"${LOG_FILE}"
 		export ANT_HOME="${WORKDIR}/apache-ant-1.9.10"
 		export PATH="${ANT_HOME}/bin:${PATH}"

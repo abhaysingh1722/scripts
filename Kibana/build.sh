@@ -74,7 +74,7 @@ function configureAndInstall() {
 	sudo mv node-v8.11.4-linux-s390x nodejs
 	sudo chmod +x nodejs
 	export PATH=$PWD/nodejs/bin:$PATH
-	node -v  >> "${LOG_FILE}"
+	sudo node -v  >> "${LOG_FILE}"
 
 	#Install Kibana
 	printf -- 'Installing Kibana..... \n' | tee -a "${LOG_FILE}"

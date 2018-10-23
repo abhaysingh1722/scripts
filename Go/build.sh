@@ -1,16 +1,22 @@
 #!/bin/bash
-# © Copyright IBM Corporation 2017, 2018.
+# © Copyright IBM Corporation 2018.
 # LICENSE: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
 set -e
 
 PACKAGE_NAME="go"
 PACKAGE_VERSION="1.10.1"
-LOG_FILE="${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 OVERRIDE=false
 
 
 trap "" 1 2 ERR
+
+#Check if directory exsists
+if [ ! -d "logs" ]; then
+   mkdir -p "logs"
+fi
+
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -26,9 +32,9 @@ function checkPrequisites()
 {
   if command -v "sudo" > /dev/null ;
   then
-    printf -- 'Sudo : Yes\n';
+    printf -- 'Sudo : Yes\n' >> "$LOG_FILE" 
   else
-    printf -- 'Sudo : No \n';
+    printf -- 'Sudo : No \n' >> "$LOG_FILE"  
     printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n';
     exit 1;
   fi;
@@ -48,7 +54,7 @@ function checkPrequisites()
 
 function cleanup()
 {
-  rm -rf go1.10.1.linux-s390x.tar.gz
+  rm -rf go1.10.1.linux-s390x.tar.gz*
   printf -- 'Cleaned up the artifacts\n'  >> "$LOG_FILE"
 }
 
@@ -64,12 +70,15 @@ function configureAndInstall()
   # Install Go
   printf -- 'Downloading go binaries \n'
   wget -q https://storage.googleapis.com/golang/go"${PACKAGE_VERSION}".linux-s390x.tar.gz | tee -a  "$LOG_FILE"
-  chmod ugo+r go1.10.1.linux-s390x.tar.gz
+  chmod ugo+r go"${PACKAGE_VERSION}".linux-s390x.tar.gz
 
   #sudo rm -rf /usr/local/go
-  sudo tar -C /usr/local -xzf go1.10.1.linux-s390x.tar.gz
+  sudo tar -C /usr/local -xzf go"${PACKAGE_VERSION}".linux-s390x.tar.gz
 
-  ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  sudo ln -sf /usr/local/go/bin/go /usr/bin/ >> "$LOG_FILE"
+  sudo ln -sf /usr/local/go/bin/godoc /usr/bin/ >> "$LOG_FILE"
+  sudo ln -sf /usr/local/go/bin/gofmt /usr/bin/ >> "$LOG_FILE"
+
   printf -- 'Extracted the tar in /usr/local and created symlink\n' >>  "$LOG_FILE"
 
   if [[ "${ID}" != "ubuntu" ]]
@@ -180,7 +189,7 @@ case "$DISTRO" in
 "sles-12.3" | "sles-15")
   printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
   printf -- 'Installing the dependencies for Go from repository \n' | tee -a "$LOG_FILE"
-  sudo zypper install -y -q tar wget gcc > /dev/null
+  sudo zypper -q install -y  tar wget gcc > /dev/null
   configureAndInstall
   ;;
 

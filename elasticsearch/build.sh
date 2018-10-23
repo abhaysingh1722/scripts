@@ -1,5 +1,5 @@
 #!/bin/bash
-# © Copyright IBM Corporation 2017, 2018.
+# © Copyright IBM Corporation 2018.
 # LICENSE: Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 
 set -e
@@ -7,13 +7,18 @@ set -e
 PACKAGE_NAME="elasticsearch"
 PACKAGE_VERSION="6.4.2"
 CURDIR="$(pwd)"
-REPO_URL="https://raw.githubusercontent.com/prankkelkar/git-demo/master"
+REPO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/elasticsearch/patch"
 ES_REPO_URL="https://github.com/elastic/elasticsearch"
-LOG_FILE="$CURDIR/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 TEST_USER="$(whoami)"
 FORCE="false"
 
 trap cleanup 0 1 2 ERR
+
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+   mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -27,7 +32,7 @@ fi
 function prepare() {
 
 	if [[ "${TEST_USER}" == "root" ]]; then
-		printf -- 'Cannot run Elasticsearch as root. Please use a standard user\n\n\n' | tee -a "$LOG_FILE"
+		printf -- 'Cannot run Elasticsearch as root. Please use a standard user\n\n' | tee -a "$LOG_FILE"
 		exit 1
 	fi
 
@@ -35,16 +40,16 @@ function prepare() {
 		printf -- 'Sudo : Yes\n' >>"$LOG_FILE"
 	else
 		printf -- 'Sudo : No \n' >>"$LOG_FILE"
-		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
+		printf -- 'You can install sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "$LOG_FILE"
 	else
-		printf -- '\nFollowing packages are needed before going ahead\n' | tee -a "$LOG_FILE"
+		printf -- 'Following packages are needed before going ahead\n' | tee -a "$LOG_FILE"
 		printf -- 'AdoptOpenJDK 10\t\tVersion: jdk-10.0.2+13\n\n' | tee -a "$LOG_FILE"
-		printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+		printf -- 'Build might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -60,8 +65,8 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${CURDIR}/elasticsearch.yml"
-	rm -rf "${CURDIR}/jvm.options"
+	rm -rf "${CURDIR}/patch1.diff"
+	rm -rf "${CURDIR}/patch2.diff"
 	rm -rf "${CURDIR}/elasticsearch"
 	rm -rf "${CURDIR}/OpenJDK10_s390x_Linux_jdk-10.0.2.13.tar.gz"
 
@@ -90,9 +95,10 @@ function configureAndInstall() {
 
 	#Added symlink for PATH
 	sudo ln -sf /usr/local/jdk-10.0.2+13/bin/java /usr/bin/
-	printf -- '\nAdding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
+	printf -- 'Adding JAVA_HOME to bashrc \n' | tee -a "$LOG_FILE"
 	#add JAVA_HOME to .bashrc
-	if [[ "$(cat .bashrc | grep -q JAVA_HOME)" ]]; then
+	cd "${HOME}"
+	if [[ "$(grep JAVA_HOME .bashrc)" ]]; then
 		printf -- '\nChanging JAVA_HOME\n' | tee -a "$LOG_FILE"
 		sed -n 's/^.*\bJAVA_HOME\b.*$/export JAVA_HOME=\/usr\/local\/jdk-9.0.4+11\//p' .bashrc | tee -a "$LOG_FILE"
 
@@ -106,23 +112,26 @@ function configureAndInstall() {
 	fi
 
 	printenv >>"$LOG_FILE"
-
+	cd "${CURDIR}"
 	# Download and configure ElasticSearch
-	printf -- '\nDownloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
+	printf -- 'Downloading Elasticsearch. Please wait.\n' | tee -a "$LOG_FILE"
 	git clone -q -b v$PACKAGE_VERSION $ES_REPO_URL
 	sleep 2
 
 	#Patch Applied for known errors
 	cd "${CURDIR}"
-	wget -q $REPO_URL/jvm.options
-	wget -q $REPO_URL/elasticsearch.yml
-	printf -- '\nReplacing files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
-	cp jvm.options "${CURDIR}/elasticsearch/distribution/src/config/jvm.options"
-	cp elasticsearch.yml "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml"
+	# patch config file 
+	wget -q $REPO_URL/patch1.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/jvm.options" patch1.diff
+
+	wget -q $REPO_URL/patch2.diff
+	patch "${CURDIR}/elasticsearch/distribution/src/config/elasticsearch.yml" patch2.diff
+
+	printf -- 'Patch applied for files elasticsearch.yml and  jvm.options\n' | tee -a "$LOG_FILE"
 
 	#Build elasticsearch
-	printf -- '\nBuilding Elasticsearch \n' | tee -a "$LOG_FILE"
-	printf -- '\nBuild might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
+	printf -- 'Building Elasticsearch \n' | tee -a "$LOG_FILE"
+	printf -- 'Build might take some time.Sit back and relax\n' | tee -a "$LOG_FILE"
 	cd "${CURDIR}/elasticsearch"
 	./gradlew -q assemble
 	printf -- 'Built Elasticsearch successfully \n\n' | tee -a "$LOG_FILE"
@@ -139,7 +148,7 @@ function startService() {
 		sudo /usr/sbin/groupadd elastic # If group is not already created
 
 	fi
-	sudo chown $TEST_USER:elastic -R /usr/share/elasticsearch
+	sudo chown "$TEST_USER:elastic" -R /usr/share/elasticsearch
 
 	#To access elastic search from anywhere
 	sudo ln -sf /usr/share/elasticsearch/bin/elasticsearch /usr/bin/
@@ -155,22 +164,22 @@ function startService() {
 		exit 127
 	fi
 
-	printf -- '\n\nService started\n' | tee -a "$LOG_FILE"
+	printf -- 'Service started\n' | tee -a "$LOG_FILE"
 }
 
 function installClient() {
 	printf -- '\nInstalling curator client\n' | tee -a "$LOG_FILE"
 	if [[ "${ID}" == "sles" ]]; then
-		sudo zypper install -y -q python-pip python-devel > /dev/null
+		sudo zypper -q install -y python-pip python-devel > /dev/null
 	fi
 
 	if [[ "${ID}" == "ubuntu" ]]; then
 		sudo apt-get update > /dev/null
-		sudo apt-get install -y python-pip > /dev/null
+		sudo apt-get install -y -qq python-pip > /dev/null
 	fi
 
 	if [[ "${ID}" == "rhel" ]]; then
-		sudo yum install -y python-setuptools > /dev/null
+		sudo yum install -y -q python-setuptools > /dev/null
 		sudo easy_install pip > /dev/null
 	fi
 
@@ -222,23 +231,27 @@ while getopts "h?dyv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\n\nSet JAVA_HOME to start using elasticsearch right away.' | tee -a "$LOG_FILE"
-	printf -- '\nJAVA_HOME=/usr/local/jdk-10.0.2+13/\n' | tee -a "$LOG_FILE"
-	printf -- '\nOr restart the session to Configure the changes automatically' | tee -a "$LOG_FILE"
+	printf -- '\n********************************************************************************************************\n'
+    printf -- "\n* Getting Started * \n" 
+	printf -- '\n\n Set JAVA_HOME to start using elasticsearch right away.' | tee -a "$LOG_FILE"
+	printf -- '\n    export JAVA_HOME=/usr/local/jdk-10.0.2+13/\n' | tee -a "$LOG_FILE"
+	printf -- '\n Restarting the session will apply changes automatically' | tee -a "$LOG_FILE"
+	printf -- '\n\n Start Elasticsearch using the following command :   elasticsearch ' | tee -a "$LOG_FILE"
 	printf -- '\nFor more information on curator client visit https://www.elastic.co/guide/en/elasticsearch/client/curator/current/index.html \n\n' | tee -a "$LOG_FILE"
+	printf -- '**********************************************************************************************************\n'
+
 }
 
 logDetails
-#checkPrequisites #Check Prequisites
+prepare
 
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
+	printf -- "Installing dependencies... it may take some time.\n"
 	sudo apt-get update > /dev/null
-	sudo apt-get install -y -qq tar wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
-	prepare
+	sudo apt-get install -y -qq tar patch wget unzip curl maven git make automake autoconf libtool patch libx11-dev libxt-dev pkg-config texinfo locales-all ant hostname > /dev/null 
 	configureAndInstall
 	startService
 	installClient
@@ -246,9 +259,8 @@ case "$DISTRO" in
 
 "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo yum install -y -q unzip curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
-	prepare
+	printf -- "Installing dependencies... it may take some time.\n"
+	sudo yum install -y -q unzip patch curl which git gcc-c++ make automake autoconf libtool libstdc++-static tar wget patch libXt-devel libX11-devel texinfo ant ant-junit.noarch hostname > /dev/null
 	configureAndInstall
 	startService
 	installClient
@@ -256,9 +268,8 @@ case "$DISTRO" in
 
 "sles-12.3" | "sles-15")
 	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
-	printf -- '\nInstalling dependencies \n' | tee -a "$LOG_FILE"
-	sudo zypper --non-interactive install -q tar wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
-	prepare
+	printf -- "Installing dependencies... it may take some time.\n"
+	sudo zypper -q --non-interactive install tar patch wget unzip curl which git gcc-c++ patch libtool automake autoconf ccache xorg-x11-proto-devel xorg-x11-devel alsa-devel cups-devel libstdc++6-locale glibc-locale libstdc++-devel libXt-devel libX11-devel texinfo ant ant-junit.noarch make net-tools > /dev/null
 	configureAndInstall
 	startService
 	installClient
@@ -270,5 +281,4 @@ case "$DISTRO" in
 	;;
 esac
 
-# Print Summary
 printSummary
