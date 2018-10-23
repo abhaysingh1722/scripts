@@ -215,11 +215,11 @@ done
 
 function printSummary() {
     printf -- '\n********************************************************************************************************\n'
-    printf -- "\n* Getting Started * \n"
+    printf -- "\n*Getting Started * \n"
     printf -- "Running etcd: \n"
-    printf -- " etcd  \n\n"
+    printf -- "     etcd  \n\n"
     printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x , set following\n"
-    printf -- "            export ETCD_UNSUPPORTED_ARCH=s390x \n"
+    printf -- "     export ETCD_UNSUPPORTED_ARCH=s390x \n"
     printf -- "etcd will listen on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
     printf -- "Next, let's set a single key, and then retrieve it:\n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
