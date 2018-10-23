@@ -58,11 +58,8 @@ function prepare() {
 }
 
 function cleanup() {
-	sudo rm -rf "${WORKDIR}/apache-ant-1.9.10"
-	sudo rm -rf "${WORKDIR}/ibm-java-s390x-sdk-8.0-5.17.bin"
-	sudo rm -rf "${WORKDIR}/installer.properties"
-	sudo rm -rf "${WORKDIR}/jffi-1.2.16.zip"
-	sudo rm -rf "${WORKDIR}/logstash-6.4.2.zip"
+	sudo rm -rf "${WORKDIR}/ibm-java-s390x-sdk-8.0-5.17.bin" "${WORKDIR}/installer.properties"
+	sudo rm -rf "${WORKDIR}/jffi-1.2.16.zip" "${WORKDIR}/logstash-6.4.2.zip"
 	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
