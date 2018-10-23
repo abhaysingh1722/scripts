@@ -10,7 +10,7 @@ USER="logstash"
 FORCE=false
 WORKDIR="/usr/local"
 CURDIR="$(pwd)"
-LOG_FILE="${CURDIR}/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
 trap cleanup 1 2 ERR
 
@@ -70,19 +70,12 @@ function configureAndInstall() {
 	#cleanup
 	printf -- 'Configuration and Installation started \n' | tee -a "${LOG_FILE}"
 
-	#printf -- 'Creating logstash user \n' | tee -a "${LOG_FILE}"
-	#sudo groupadd "${USER}"
-	#sudo useradd -g "${USER}" -p "${USER}" -d "/home/${USER}" -m "${USER}"
-
 	# Install IBMSDK
 	printf -- 'Configuring IBMSDK \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	printf -- 'wget ibm-java \n' | tee -a "${LOG_FILE}"
 	sudo wget -q http://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/8.0.5.17/linux/s390x/ibm-java-s390x-sdk-8.0-5.17.bin >>"${LOG_FILE}"
-	printf -- 'wget installer.properties \n' | tee -a "${LOG_FILE}"
 	sudo wget -q https://raw.githubusercontent.com/zos-spark/scala-workbench/master/files/installer.properties.java >>"${LOG_FILE}"
 	tail -n +3 installer.properties.java | sudo tee installer.properties
-	printf -- 'tail \n' | tee -a "${LOG_FILE}"
 	sudo cat installer.properties >>"${LOG_FILE}"
 	sudo chmod +x ibm-java-s390x-sdk-8.0-5.17.bin
 	sudo ./ibm-java-s390x-sdk-8.0-5.17.bin -r installer.properties | tee -a "${LOG_FILE}"
@@ -116,10 +109,7 @@ function configureAndInstall() {
 	sudo ant >>"${LOG_FILE}"
 
 	printf -- 'Add libjffi-1.2.so to LD_LIBRARY_PATH and set permissions \n' >>"${LOG_FILE}"
-	sudo chmod 777 "${WORKDIR}/logstash-6.4.2/"
-	sudo chmod 777 "${WORKDIR}/jffi-jffi-1.2.16/"
-	#sudo chown -R "${USER}":"${USER}" "${WORKDIR}/logstash-6.4.2/"
-	#sudo chown -R "${USER}":"${USER}" "${WORKDIR}/jffi-jffi-1.2.16/"
+	sudo chmod 777 "${WORKDIR}/logstash-6.4.2/" "${WORKDIR}/jffi-jffi-1.2.16/"
 	export LD_LIBRARY_PATH="${WORKDIR}/jffi-jffi-1.2.16/build/jni/:$LD_LIBRARY_PATH"
 
 	# Add config/logstash.yml to /etc/logstash/config/
@@ -127,9 +117,8 @@ function configureAndInstall() {
 	sudo cp -Rf "${WORKDIR}/logstash-6.4.2/config/logstash.yml" /etc/logstash/config/logstash.yml
 
 	# Include Logstash in the PATH
-	#sudo cp -Rf "${WORKDIR}/logstash-6.4.2/bin"/* /usr/bin/
+	
 	sudo ln -s "${WORKDIR}/logstash-6.4.2/bin/logstash" /usr/bin/
-	#export PATH=$PATH:"${WORKDIR}/logstash-6.4.2/bin"
 	printf -- 'Installed logstash successfully \n' >>"${LOG_FILE}"
 
 	#Cleanup
