@@ -92,16 +92,23 @@ function configureAndInstall() {
 		printf -- 'GCC build success \n' | tee -a "$LOG_FILE"
 	fi
 
+	#Give permission
+	sudo chown -R "$USER" "$BUILD_DIR"
+
 	cd "$BUILD_DIR"
-	sudo git clone -q -b v"${PACKAGE_VERSION}" git://github.com/google/protobuf.git
+	git clone -q -b v"${PACKAGE_VERSION}" git://github.com/google/protobuf.git
+	
+	#Give permission
+	sudo chown -R "$USER" "$BUILD_DIR/protobuf"
+
 	cd protobuf
-	sudo git config --global url."git://github.com/".insteadOf "https://github.com/"
-	sudo git submodule update --init --recursive
+	git config --global url."git://github.com/".insteadOf "https://github.com/"
+	git submodule update --init --recursive
 	printf -- 'Git clone protobuf success \n' | tee -a "$LOG_FILE"
 
-	sudo ./autogen.sh
-	sudo ./configure
-	sudo make
+	./autogen.sh
+	./configure
+	make
 
 	# Run Tests
 	runTest
