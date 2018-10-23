@@ -8,11 +8,15 @@ PACKAGE_NAME="kibana"
 PACKAGE_VERSION="6.4.2"
 FORCE=false
 WORKDIR="/usr/local"
-LOG_FILE="${WORKDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
+CURDIR="$(pwd)"
+LOG_FILE="${CURDIR}/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 
-trap "" 1 2 ERR
+trap cleanup 1 2 ERR
 
-mkdir -p "$WORKDIR/logs/"
+#Check if directory exsists
+if [ ! -d "$CURDIR/logs/" ]; then
+   mkdir -p "$CURDIR/logs/"
+fi
 
 # Need handling for RHEL 6.10 as it doesn't have os-release file
 if [ -f "/etc/os-release" ]; then
@@ -26,23 +30,23 @@ fi
 
 function prepare() {
 	if command -v "sudo" >/dev/null; then
-		printf -- 'Sudo : Yes\n'
+		printf -- 'Sudo : Yes\n' >> "$LOG_FILE"
 	else
-		printf -- 'Sudo : No \n'
+		printf -- 'Sudo : No \n' >> "$LOG_FILE"
 		printf -- 'You can install the same from installing sudo from repository using apt, yum or zypper based on your distro. \n'
 		exit 1
 	fi
 
 	if [[ "$FORCE" == "true" ]]; then
-		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "${LOG_FILE}"
+		printf -- 'Force attribute provided hence continuing with install without confirmation message\n' | tee -a "${LOG_FILE}"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\n\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
+		printf -- "\nAs part of the installation , Node.js v8.11.4 will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
 			[Yy]*)
-				printf -- 'User responded with Yes. \n' | tee -a "${LOG_FILE}"
+				printf -- 'User responded with Yes. \n' >> "${LOG_FILE}"
 				break
 				;;
 			[Nn]*) exit ;;
@@ -53,8 +57,8 @@ function prepare() {
 }
 
 function cleanup() {
-	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-	rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
+	sudo rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64"
+	sudo rm -rf "${WORKDIR}/kibana-6.4.2-linux-x86_64.tar.gz" "${WORKDIR}/node-v8.11.4-linux-s390x.tar.gz"
 	printf -- 'Cleaned up the artifacts\n' >>"${LOG_FILE}"
 }
 
@@ -66,23 +70,23 @@ function configureAndInstall() {
 	printf -- 'Downloading nodejs binaries \n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
 
-	wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz | tee -a "${LOG_FILE}"
-	tar xvf node-v8.11.4-linux-s390x.tar.gz >> "${LOG_FILE}"
-	mv node-v8.11.4-linux-s390x nodejs
+	sudo wget -q  https://nodejs.org/dist/v8.11.4/node-v8.11.4-linux-s390x.tar.gz | tee -a "${LOG_FILE}"
+	sudo tar xvf node-v8.11.4-linux-s390x.tar.gz >> "${LOG_FILE}"
+	sudo mv node-v8.11.4-linux-s390x nodejs
 	export PATH=$PWD/nodejs/bin:$PATH
-	node -v  >> "${LOG_FILE}"
+	sudo node -v  >> "${LOG_FILE}"
 
 	#Install Kibana
 	printf -- 'Installing Kibana..... \n' | tee -a "${LOG_FILE}"
 	printf -- 'Get Kibana release package and extract\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}"
-	wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz  >> "${LOG_FILE}"
-	tar xvf kibana-6.4.2-linux-x86_64.tar.gz >> "${LOG_FILE}"
+	sudo wget -q https://artifacts.elastic.co/downloads/kibana/kibana-6.4.2-linux-x86_64.tar.gz  >> "${LOG_FILE}"
+	sudo tar xvf kibana-6.4.2-linux-x86_64.tar.gz >> "${LOG_FILE}"
 
 	printf -- 'Replace Node.js in the package with the installed Node.js.\n' | tee -a "${LOG_FILE}"
 	cd "${WORKDIR}/kibana-6.4.2-linux-x86_64"
-	mv node node_old # rename the node
-	ln -s "${WORKDIR}"/nodejs node >> "${LOG_FILE}"
+	sudo mv node node_old # rename the node
+	sudo ln -s "${WORKDIR}"/nodejs node >> "${LOG_FILE}"
 
 	# Add config/kibana.yml to /etc/kibana/config/
 	sudo mkdir -p /etc/kibana/config/

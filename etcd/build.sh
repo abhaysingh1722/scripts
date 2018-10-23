@@ -8,6 +8,7 @@ CURDIR="$(pwd)"
 GO_URL="https://raw.githubusercontent.com/imdurgadas/scripts/master/Go/build.sh"
 CONFIG_ETCD="https://raw.githubusercontent.com/imdurgadas/scripts/master/etcd/conf/etcd.conf.yml"
 FORCE="false"
+TESTS="false"
 LOG_FILE="$CURDIR/logs/${PACKAGE_NAME}-${PACKAGE_VERSION}-$(date +"%F-%T").log"
 trap cleanup 0 1 2 ERR
 
@@ -141,6 +142,10 @@ function configureAndInstall() {
     sudo cp "${GOPATH}/src/github.com/coreos/etcd/bin/etcd" /usr/bin/            
     printf -- 'Build etcd successfully \n' >>"$LOG_FILE"
 
+    #Run tests
+    runTest
+    
+    #cleanup
     cleanup
 
     #Verify etcd installation
@@ -152,7 +157,17 @@ function configureAndInstall() {
     fi
 
 }
-
+#Tests function
+function runTest() {
+	set +e
+	if [[ "$TESTS" == "true" ]]; then
+		printf -- "TEST Flag is set. continue with running test \n"
+		cd "${GOPATH}/src/github.com/coreos/etcd"
+		./test
+		printf -- "Tests completed. \n" | tee -a "$LOG_FILE"
+	fi
+	set -e
+}
 function logDetails() {
     printf -- '**************************** SYSTEM DETAILS *************************************************************\n' >"$LOG_FILE"
     if [ -f "/etc/os-release" ]; then
@@ -169,13 +184,13 @@ function logDetails() {
 function printHelp() {
     echo
     echo "Usage: "
-    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation]"
+    echo " install.sh  [-d <debug>] [-v package-version] [-y install-without-confirmation] [-t install and run tests]"
     echo "       default: If no -v specified, latest version will be installed"
     echo
 }
 
 
-while getopts "h?dyv:" opt; do
+while getopts "h?dyv:t" opt; do
     case "$opt" in
     h | \?)
         printHelp
@@ -191,23 +206,27 @@ while getopts "h?dyv:" opt; do
     y)
         FORCE="true"
         ;;
+    t)
+        TESTS="true"
+        ;;
     esac
 done
 
 
 function printSummary() {
     printf -- '\n********************************************************************************************************\n'
-    printf -- "\n* Getting Started * \n"
+    printf -- "\n*Getting Started * \n"
     printf -- "Running etcd: \n"
-    printf -- " etcd  \n\n"
+    printf -- "     etcd  \n\n"
     printf -- "In case of error etcdmain: etcd on unsupported platform without ETCD_UNSUPPORTED_ARCH=s390x , set following\n"
-    printf -- "            export ETCD_UNSUPPORTED_ARCH=s390x \n"
+    printf -- "     export ETCD_UNSUPPORTED_ARCH=s390x \n"
     printf -- "etcd will listen on port 2379 for client communication and on port 2380 for server-to-server communication.\n"
     printf -- "Next, let's set a single key, and then retrieve it:\n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey -XPUT -d value='this is awesome' \n"
     printf -- "     curl -L http://127.0.0.1:2379/v2/keys/mykey \n"
-    printf -- "\n The Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
-    printf -- "Command to use with config file    etcd --config-file=/etc/etcd/etcd.conf.yml \n"
+    printf -- "\nThe Configuration file can be found in  /etc/etcd/etcd.conf.yml \n"
+    printf -- "Command to use with config file\n"
+    printf -- "     etcd --config-file=/etc/etcd/etcd.conf.yml \n"
     printf -- "You have successfully started etcd and written a key to the store.\n"
     printf -- '**********************************************************************************************************\n'
 }
