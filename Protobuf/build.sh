@@ -41,7 +41,7 @@ function prepare() {
 		printf -- 'Force attribute provided hence continuing with install without confirmation message' | tee -a "$LOG_FILE"
 	else
 		# Ask user for prerequisite installation
-		printf -- "\\n\\nAs part of the installation , some dependencies will be installed, \\n"
+		printf -- "\n\nAs part of the installation , some dependencies will be installed, \n"
 		while true; do
 			read -r -p "Do you want to continue (y/n) ? :  " yn
 			case $yn in
@@ -70,7 +70,7 @@ function configureAndInstall() {
 	printf -- 'Configuration and Installation started \n'
 
 	# Install protobuf
-	printf -- "\\nInstalling %s..... \\n" "$PACKAGE_NAME"
+	printf -- "\nInstalling %s..... \n" "$PACKAGE_NAME"
 
 	# Protobuf installation
 
@@ -125,9 +125,9 @@ function configureAndInstall() {
 
 	#Verify protobuf installation
 	if command -v "protoc" >/dev/null; then
-		printf -- "%s installation completed. Please check the Usage to start the service.\\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
+		printf -- "%s installation completed. Please check the Usage to start the service.\n" "$PACKAGE_NAME" | tee -a "$LOG_FILE"
 	else
-		printf -- "Error while installing %s, exiting with 127 \\n" "$PACKAGE_NAME"
+		printf -- "Error while installing %s, exiting with 127 \n" "$PACKAGE_NAME"
 		exit 127
 	fi
 }
@@ -158,8 +158,8 @@ function logDetails() {
 	cat /proc/version >>"$LOG_FILE"
 	printf -- '*********************************************************************************************************\n' >>"$LOG_FILE"
 
-	printf -- "Detected %s \\n" "$PRETTY_NAME"
-	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
+	printf -- "Detected %s \n" "$PRETTY_NAME"
+	printf -- "Request details : PACKAGE NAME= %s , VERSION= %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" | tee -a "$LOG_FILE"
 }
 
 # Print the usage message
@@ -193,11 +193,11 @@ while getopts "h?dytv:" opt; do
 done
 
 function printSummary() {
-	printf -- '\\n***************************************************************************************\n'
-	printf -- "Getting Started: \\n"
-	printf -- "protoc --version \\n"
+	printf -- '\n***************************************************************************************\n'
+	printf -- "Getting Started: \n"
+	printf -- "protoc --version \n"
 	printf -- '***************************************************************************************\n'
-	printf -- '\\n'
+	printf -- '\n'
 }
 
 ###############################################################################################################
@@ -208,18 +208,18 @@ prepare #Check Prequisites
 DISTRO="$ID-$VERSION_ID"
 case "$DISTRO" in
 "ubuntu-16.04" | "ubuntu-18.04")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo apt-get -qq update
 	sudo apt-get install -y -qq tar wget autoconf libtool automake g++ make git bzip2 curl unzip zlib1g-dev >/dev/null
 	configureAndInstall
 	;;
 
 "rhel-6.x" | "rhel-7.3" | "rhel-7.4" | "rhel-7.5")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 
 	if [[ "$DISTRO" == "rhel-6.x" ]]; then
 		sudo yum install -y -q tar wget gcc-c++ make git bzip2 curl unzip zlib zlib-devel bison binutils-devel autoconf automake libtool >/dev/null
-		printf -- "Installing for %s \\n" "$DISTRO" | tee -a "$LOG_FILE"
+		printf -- "Installing for %s \n" "$DISTRO" | tee -a "$LOG_FILE"
 	else
 
 		sudo yum install -y -q tar wget autoconf libtool automake gcc-c++ make git bzip2 curl unzip zlib zlib-devel curl >/dev/null
@@ -229,13 +229,13 @@ case "$DISTRO" in
 	;;
 
 "sles-12.3" | "sles-15")
-	printf -- "Installing %s %s for %s \\n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "Installing %s %s for %s \n" "$PACKAGE_NAME" "$PACKAGE_VERSION" "$DISTRO" | tee -a "$LOG_FILE"
 	sudo zypper -q install -y tar wget autoconf libtool automake gcc-c++ make git bzip2 curl unzip zlib zlib-devel >/dev/null
 	configureAndInstall
 	;;
 
 *)
-	printf -- "%s not supported \\n" "$DISTRO" | tee -a "$LOG_FILE"
+	printf -- "%s not supported \n" "$DISTRO" | tee -a "$LOG_FILE"
 	exit 1
 	;;
 esac
